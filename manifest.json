@@ -1,0 +1,25 @@
+{
+  "name": "نظام المبيعات والمخزون",
+  "short_name": "المبيعات",
+  "description": "نظام نقطة بيع وإدارة مخزون وزبائن يعمل بدون إنترنت",
+  "lang": "ar",
+  "dir": "rtl",
+  "id": "./index.html",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#eef2f1",
+  "theme_color": "#2347c5",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "بيع جديد", "short_name": "بيع", "url": "./index.html#/pos", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "المنتجات", "short_name": "منتجات", "url": "./index.html#/products", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "التقارير", "short_name": "تقارير", "url": "./index.html#/reports", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+  ]
+}
