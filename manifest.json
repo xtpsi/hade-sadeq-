@@ -8,18 +8,72 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#eef2f1",
-  "theme_color": "#2347c5",
-  "categories": ["business", "finance", "productivity"],
+  "orientation": "any",
+  "background_color": "#f4f5fb",
+  "theme_color": "#4f46e5",
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
+  ],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "بيع جديد", "short_name": "بيع", "url": "./index.html#/pos", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
-    { "name": "المنتجات", "short_name": "منتجات", "url": "./index.html#/products", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
-    { "name": "التقارير", "short_name": "تقارير", "url": "./index.html#/reports", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
-  ]
+    {
+      "name": "بيع جديد",
+      "short_name": "بيع",
+      "url": "./index.html#/pos",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "المنتجات",
+      "short_name": "منتجات",
+      "url": "./index.html#/products",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "التقارير",
+      "short_name": "تقارير",
+      "url": "./index.html#/reports",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "prefers_related_applications": false
 }

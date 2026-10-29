@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2347c5">
+<meta name="theme-color" content="#4f46e5">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,12 +11,19 @@
 <title>نظام المبيعات والمخزون</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="المبيعات">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script>
+/* يفضّل ملفات vendor/ المحلية ويرجع للإنترنت إن لم توجد */
+window.VND = function (l, c) { try { var x = new XMLHttpRequest(); x.open('GET', l, false); x.send(); if (x.status === 200 && !/html/i.test(x.getResponseHeader('content-type') || '')) return l; } catch (e) { } return c; };
+(function () {
+  var G = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap', J = 'https://cdn.jsdelivr.net/npm/';
+  [['vendor/fonts.css', G], ['vendor/bootstrap.rtl.min.css', J + 'bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css'], ['vendor/bootstrap-icons/bootstrap-icons.min.css', J + 'bootstrap-icons@1.11.3/font/bootstrap-icons.min.css']]
+    .forEach(function (a) { document.write('<link rel="stylesheet" href="' + VND(a[0], a[1]) + '">'); });
+})();
+</script>
 <style>
 :root{
   --font-head:'Noto Kufi Arabic','IBM Plex Sans Arabic',Tahoma,sans-serif;
@@ -248,9 +255,9 @@ mark.hl{background:color-mix(in srgb,#ffc928 62%,transparent);color:inherit;bord
 #printArea{display:none}
 .lbl-page{display:grid;grid-template-columns:repeat(var(--cols,3),1fr);gap:2mm;page-break-after:always;break-after:page}
 .lbl-page:last-child{page-break-after:auto}
-.lbl{border:1px dashed #bbb;padding:2mm;text-align:center;font-size:9px;line-height:1.25;overflow:hidden;color:#000;background:#fff}
-.lbl .ln{font-weight:700;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lbl svg{max-width:100%;height:11mm}
+.lbl-page .lbl{border:1px dashed #bbb;padding:2mm;text-align:center;font-size:9px;line-height:1.25;overflow:hidden;color:#000;background:#fff}
+.lbl-page .lbl .ln{font-weight:700;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbl-page .lbl svg{max-width:100%;height:11mm}
 @media print{
   body>*:not(#printArea){display:none!important}
   body{background:#fff!important}
@@ -270,6 +277,69 @@ mark.hl{background:color-mix(in srgb,#ffc928 62%,transparent);color:inherit;bord
 #splash{position:fixed;inset:0;z-index:4000;background:var(--bg);display:grid;place-items:center;color:var(--muted)}
 #splash i{font-size:3rem;color:var(--accent);animation:pulse 1.2s infinite alternate}
 @keyframes pulse{to{transform:scale(1.15);opacity:.6}}
+
+/* ===== تحسينات الجوال + صور الوصل ===== */
+html,body{overflow-x:hidden;-webkit-text-size-adjust:100%}
+button,a,[data-act]{touch-action:manipulation}
+.rimg{position:relative;width:84px;height:84px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;flex:0 0 auto;padding:0}
+.rimg img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.rimg .icb{position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;font-size:.7rem}
+.rimg.add{border-style:dashed;color:var(--accent-ink);font-size:.7rem;gap:2px;align-content:center;justify-items:center;cursor:pointer}
+.rimg.add i{font-size:1.4rem}
+@media(max-width:767.98px){
+  input,select,textarea,.form-control,.form-select,.pinp,.s-in{font-size:16px!important}
+  .btn,.form-control,.form-select{min-height:44px}
+  .btn.btn-sm{min-height:38px}
+  .tabs button{min-height:42px}
+  .tbl td,.tbl th{padding:.5rem .4rem}
+  .tbl .qty input{width:46px}
+  .mx{max-height:92dvh}
+  .rowx{padding-block:12px}
+}
+
+/* ===== واجهة الجوال (2) ===== */
+.cartbar{position:fixed;inset-inline:12px;bottom:calc(var(--nav-h) + 8px + env(safe-area-inset-bottom,0px));z-index:1035;display:flex;align-items:center;justify-content:space-between;gap:10px;border:0;border-radius:18px;padding:12px 16px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-weight:700;box-shadow:0 14px 30px -10px rgba(35,71,197,.6);transition:transform .25s,opacity .25s}
+.cartbar.hide{transform:translateY(24px);opacity:0;pointer-events:none}
+.cartbar .go{font-size:.82rem;opacity:.92}
+@media(min-width:992px){.cartbar{display:none}}
+body[data-screen=pos] main#view{padding-bottom:calc(var(--nav-h) + 92px + env(safe-area-inset-bottom,0px))}
+body.kb .bnav,body.kb .cartbar,body.kb .fab{display:none}
+@media(max-width:767.98px){
+  main#view{padding-inline:max(10px,env(safe-area-inset-left)) max(10px,env(safe-area-inset-right))}
+  .tag .big{font-size:clamp(1.05rem,5.2vw,1.3rem)}
+  .rowx .t{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .qty button{width:42px;height:42px}.qty input{height:42px}.pinp{height:42px}
+  .icb{width:40px;height:40px}
+  .cline .icb{width:38px!important;height:38px!important}
+  .paybar button,.fchip{padding:8px 14px;min-height:38px}
+  .bnav a{font-size:.7rem}
+  .mx::before{content:"";flex:none;width:42px;height:4px;border-radius:4px;background:var(--line);margin:8px auto 0}
+  .mx-head{padding:10px 16px 12px}
+  .mx-foot{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  .sres{max-height:52dvh}
+}
+
+/* ===== مظهر عصري (إنديغو/بنفسجي، بطاقات ناعمة) ===== */
+:root{--bg:#f4f5fb;--surface:#fff;--surface-2:#eff1f9;--ink:#141a33;--muted:#667085;--line:#e4e7f2;--accent:#4f46e5;--accent-2:#7c3aed;--ok:#059669;--warn:#d97706;--bad:#e11d48;--r-lg:24px;--r-md:16px;--r-sm:12px;--shadow:0 1px 2px rgba(20,26,51,.04),0 14px 32px -18px rgba(79,70,229,.35)}
+[data-bs-theme=dark]{--bg:#0a0c16;--surface:#131729;--surface-2:#1a1f36;--ink:#eceffb;--muted:#8d95b4;--line:#252b46;--accent-ink:color-mix(in srgb,var(--accent) 45%,#fff);--shadow:0 1px 0 rgba(0,0,0,.3),0 14px 32px -16px rgba(0,0,0,.7)}
+body{background:radial-gradient(900px 420px at 100% -8%,color-mix(in srgb,var(--accent) 11%,transparent),transparent 70%),var(--bg)}
+.topbar{border-radius:0 0 24px 24px}.topbar::after{display:none}
+.bnav{background:color-mix(in srgb,var(--surface) 90%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.form-control,.form-select{background-color:var(--surface-2);border-color:transparent}
+.form-control:focus,.form-select:focus{background-color:var(--surface)}
+.btn-accent{box-shadow:0 8px 18px -8px var(--accent)}
+.mx{border-radius:28px 28px 0 0}
+.tag{border-radius:22px;background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow);padding:16px 16px 12px}
+.tag::before{inset-inline:0;top:0;width:auto;height:4px;border-radius:0;box-shadow:none;background:var(--tc,var(--accent))}
+.tag .lbl{color:var(--muted);opacity:1;font-weight:600;padding-inline-end:0}
+.tag .big{color:var(--tc,var(--accent));font-size:clamp(1.1rem,5.4vw,1.4rem)}
+.tag .sub{border-top:1px solid var(--line);color:var(--muted);opacity:1}
+.tag.g1{--tc:#059669}.tag.g2{--tc:#4f46e5}.tag.g3{--tc:#e11d48}.tag.g4{--tc:#d97706}.tag.g5{--tc:#dc2626}.tag.g6{--tc:#7c3aed}
+.tag.g1,.tag.g2,.tag.g3,.tag.g4,.tag.g5,.tag.g6{background:linear-gradient(165deg,color-mix(in srgb,var(--tc) 11%,var(--surface)),var(--surface) 70%)}
+.rd-day{display:flex;justify-content:space-between;align-items:center;margin:14px 0 4px;padding:7px 12px;border-radius:12px;background:var(--surface-2);font-size:.86rem}
+.rd-day span{color:var(--muted);font-size:.74rem}
+.rd-row{cursor:pointer;border-bottom:1px solid var(--line);border-radius:10px;padding-inline:6px}
+.rd-row:active{background:var(--accent-soft)}
 </style>
 </head>
 <body data-screen="dashboard">
@@ -281,14 +351,13 @@ mark.hl{background:color-mix(in srgb,#ffc928 62%,transparent);color:inherit;bord
 <div id="lock"></div>
 <div id="printArea"></div>
 <style id="pageStyle"></style>
-<script src="https://cdn.jsdelivr.net/npm/dexie@3.2.7/dist/dexie.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>document.write('<script src="' + VND('vendor/dexie.min.js', 'https://cdn.jsdelivr.net/npm/dexie@3.2.7/dist/dexie.min.js') + '"><\/script><script src="' + VND('vendor/JsBarcode.all.min.js', 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js') + '"><\/script>');</script>
 <script>
 'use strict';
 /* =====================================================================
    نظام المبيعات والمخزون — PWA يعمل بدون إنترنت
    ===================================================================== */
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.4.0';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -379,6 +448,7 @@ const fmtTime = t => new Date(t).toLocaleTimeString(loc(), { hour: '2-digit', mi
 const fmtDT = t => fmtDate(t) + ' ' + fmtTime(t);
 const fmtLong = t => new Date(t).toLocaleDateString(loc(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 const compact = n => { n = Math.round(Number(n) || 0); const a = Math.abs(n); if (a >= 1e6) return fmtNum(Math.round(n / 1e5) / 10) + ' م'; if (a >= 1e3) return fmtNum(Math.round(n / 100) / 10) + ' ألف'; return fmtNum(n); };
+const barLbl = (n, mx) => { n = Number(n) || 0; return mx >= 1e6 ? fmtNum(Math.round(n / 1e5) / 10) : mx >= 1e3 ? fmtNum(Math.round(n / 100) / 10) : fmtNum(Math.round(n)); };
 const startOfDay = (t = Date.now()) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
 function periodRange(p) {
   const now = Date.now(), sod = startOfDay(now);
@@ -429,12 +499,13 @@ async function nextNo(key, prefix, len = 4) {
 }
 
 /* ---------- تحميل البيانات إلى الذاكرة ---------- */
+const bcKey = c => { const s = latinDigits(String(c == null ? '' : c)).replace(/[^0-9A-Za-z]/g, '').toUpperCase(); return /^\d+$/.test(s) ? s.replace(/^0+(?=\d)/, '') : s; };
 async function loadProducts() {
   const list = await db.products.toArray();
   State.products = list; State.pmap = new Map(); State.bcmap = new Map(); IDX.clear();
   for (const p of list) {
     State.pmap.set(p.id, p);
-    const bc = latinDigits(p.barcode || '').trim();
+    const bc = bcKey(p.barcode);
     if (bc) State.bcmap.set(bc, p);
     IDX.set(p.id, { n: norm(p.name), w: norm(p.name).split(' ').filter(Boolean), b: norm(p.barcode || ''), c: norm(p.category || '') });
   }
@@ -458,7 +529,7 @@ function genBarcode() {
     const base = '29' + String(Date.now()).slice(-8) + String(Math.floor(Math.random() * 100)).padStart(2, '0');
     let sum = 0; for (let i = 0; i < 12; i++) sum += (+base[i]) * (i % 2 ? 3 : 1);
     const code = base + ((10 - sum % 10) % 10);
-    if (!State.bcmap.has(code)) return code;
+    if (!State.bcmap.has(bcKey(code))) return code;
   }
   return String(Date.now());
 }
@@ -609,7 +680,7 @@ function mountSearch(host, { placeholder = 'ابحث...', onSelect, camera = tru
   const input = $('.s-in', host), box = $('.sres', host), clr = $('.s-clr', host), cam = $('.s-cam', host);
   let items = [], cur = -1, tokens = [];
   const getList = () => typeof list === 'function' ? list() : list;
-  const exactBarcode = q => State.bcmap.get(latinDigits(q).trim());
+  const exactBarcode = q => State.bcmap.get(bcKey(q));
 
   function draw(approx, q) {
     if (!items.length) {
@@ -825,15 +896,15 @@ window.addEventListener('afterprint', () => { const a = $('#printArea'); if (a) 
 
 /* ---------- تحميل المكتبات الثقيلة عند الحاجة (تُخزَّن للعمل بدون إنترنت) ---------- */
 const LIBS = {
-  xlsx: { url: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', g: 'XLSX' },
-  qr: { url: 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js', g: 'Html5Qrcode' }
+  xlsx: { url: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', local: 'vendor/xlsx.full.min.js', g: 'XLSX' },
+  qr: { url: 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js', local: 'vendor/html5-qrcode.min.js', g: 'Html5Qrcode' }
 };
 const libP = {};
 function ensureLib(k) {
   const L = LIBS[k];
   if (window[L.g]) return Promise.resolve();
   return libP[k] || (libP[k] = new Promise((res, rej) => {
-    const s = document.createElement('script'); s.src = L.url; s.onload = res;
+    const s = document.createElement('script'); s.src = VND(L.local, L.url); s.onload = res;
     s.onerror = () => { delete libP[k]; rej(new Error('تعذّر تحميل المكتبة — افتح التطبيق مرة واحدة مع الإنترنت')); };
     document.head.appendChild(s);
   }));
@@ -846,19 +917,25 @@ async function scanBarcode() {
     let scanner, done = false, started = false;
     const m = openModal({
       title: '<i class="bi bi-upc-scan"></i> مسح الباركود',
-      body: `<div id="qrbox" style="width:100%;min-height:240px;border-radius:16px;overflow:hidden;background:#000"></div><div class="small text-muted mt-2" id="qrmsg">وجّه الكاميرا نحو الباركود</div>`,
-      footer: `<button class="btn btn-light" data-mx-close>إلغاء</button>`,
+      body: `<div id="qrbox" style="width:100%;min-height:240px;border-radius:16px;overflow:hidden;background:#000"></div><div class="small text-muted mt-2" id="qrmsg">وجّه الكاميرا نحو الباركود (قرّب أو بعّد قليلاً حتى يثبت التركيز)</div><div class="d-flex gap-2 mt-2"><input id="qr-man" class="form-control mono" inputmode="numeric" placeholder="أو اكتب الباركود يدوياً"><button class="btn btn-accent" id="qr-ok" type="button">موافق</button></div>`,
+      footer: `<button class="btn btn-light" id="qr-torch" hidden type="button"><i class="bi bi-lightning-charge-fill"></i></button><button class="btn btn-light" data-mx-close>إلغاء</button>`,
       onClose: async () => {
         try { if (scanner && started) await scanner.stop(); scanner && scanner.clear(); } catch { }
         if (!done) res(null);
       }
     });
+    const finish = v => { if (done) return; done = true; res(String(v).trim()); m.close(); };
+    $('#qr-ok', m.el).onclick = () => { const v = $('#qr-man', m.el).value.trim(); if (v) finish(v); };
+    $('#qr-man', m.el).addEventListener('keydown', e => { if (e.key === 'Enter') $('#qr-ok', m.el).click(); });
+    let torchOn = false;
+    const setupTorch = () => { try { const caps = scanner.getRunningTrackCapabilities(); if (caps && caps.torch) { const b = $('#qr-torch', m.el); b.hidden = false; b.onclick = async () => { torchOn = !torchOn; try { await scanner.applyVideoConstraints({ advanced: [{ torch: torchOn }] }); } catch { } b.classList.toggle('btn-accent', torchOn); }; } } catch { } };
     setTimeout(() => {
       try {
-        scanner = new Html5Qrcode('qrbox', { verbose: false, experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
-        scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 260, height: 150 } },
+        const F = window.Html5QrcodeSupportedFormats;
+        scanner = new Html5Qrcode('qrbox', { verbose: false, formatsToSupport: F ? [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.CODE_93, F.ITF, F.CODABAR, F.QR_CODE, F.DATA_MATRIX] : undefined, experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
+        scanner.start({ facingMode: 'environment' }, { fps: 15, qrbox: (w, hh) => ({ width: Math.floor(w * 0.9), height: Math.floor(Math.min(hh * 0.55, 220)) }), videoConstraints: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } },
           txt => { if (done) return; done = true; beep(1000, 90); res(String(txt).trim()); m.close(); }, () => { })
-          .then(() => { started = true; })
+          .then(() => { started = true; try { scanner.applyVideoConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => { }); } catch { } setupTorch(); })
           .catch(err => { const el = $('#qrmsg', m.el); if (el) el.innerHTML = `<span class="text-danger">تعذّر تشغيل الكاميرا. تأكد من منح الإذن وأن الصفحة تعمل عبر HTTPS أو localhost.</span>`; console.warn(err); });
       } catch (e) { fail(e); }
     }, 300);
@@ -901,7 +978,7 @@ async function firstRun() {
       <div class="row g-2"><div class="col-6"><label class="form-label">رمز PIN (4-8 أرقام) *</label><input class="form-control" id="f-pin" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password"></div>
       <div class="col-6"><label class="form-label">تأكيد الرمز *</label><input class="form-control" id="f-pin2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password"></div></div>
       <div class="form-check form-switch mt-3"><input class="form-check-input" type="checkbox" id="f-lock" checked><label class="form-check-label" for="f-lock">تفعيل قفل التطبيق بالرمز</label></div>
-      <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="f-sample" checked><label class="form-check-label" for="f-sample">إضافة منتجات تجريبية لتجربة البحث</label></div>
+      <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="f-sample"><label class="form-check-label" for="f-sample">إضافة منتجات تجريبية لتجربة البحث</label></div>
       <div class="text-danger small mt-2" id="f-err"></div>`,
       footer: `<button class="btn btn-accent w-100" id="f-go">ابدأ الاستخدام</button>`
     });
@@ -1220,7 +1297,7 @@ async function importProductsFile(file) {
     const name = String(get(row, 'name') ?? '').trim();
     if (!name) { errors.push(`سطر ${i + 2}: الاسم فارغ`); return; }
     let bc = latinDigits(String(get(row, 'barcode') ?? '')).trim();
-    const ex = (bc && State.bcmap.get(bc)) || State.products.find(p => norm(p.name) === norm(name));
+    const ex = (bc && State.bcmap.get(bcKey(bc))) || State.products.find(p => norm(p.name) === norm(name));
     const has = k => get(row, k) !== undefined && get(row, k) !== '';
     const rec = { name, barcode: bc, category: String(get(row, 'category') ?? '').trim(), unit: String(get(row, 'unit') ?? '').trim() };
     if (has('buy')) rec.buyPrice = toNum(get(row, 'buy'));
@@ -1300,7 +1377,7 @@ function openLabels(preIds) {
       for (const c of $$('.lb-c', m.el).filter(c => c.checked)) {
         const p = State.pmap.get(+c.dataset.id); if (!p) continue;
         let code = p.barcode;
-        if (!code && gen) { code = genBarcode(); await db.products.update(p.id, { barcode: code }); p.barcode = code; State.bcmap.set(code, p); }
+        if (!code && gen) { code = genBarcode(); await db.products.update(p.id, { barcode: code }); p.barcode = code; State.bcmap.set(bcKey(code), p); }
         if (!code) continue;
         const n = Math.min(500, parseInt(latinDigits($(`.lb-n[data-id="${p.id}"]`, m.el).value)) || 0);
         for (let i = 0; i < n; i++) labels.push({ p, code });
@@ -1412,6 +1489,15 @@ function drawCart() {
   calcUI(true);
   db.held.count().then(n => { const e = $('#heldn'); if (e) { e.textContent = n; e.hidden = !n; } });
 }
+function drawCartBar(t, c) {
+  let b = $('#cartbar');
+  if (State.view !== 'pos' || !c.items.length) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('button'); b.id = 'cartbar'; b.type = 'button'; b.className = 'cartbar'; document.body.appendChild(b); b.onclick = () => { const x = $('#cartBox'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; }
+  b.innerHTML = `<span><i class="bi bi-cart3"></i> ${fmtNum(c.items.length)} صنف</span><b class="num">${money(t.total)}</b><span class="go">السلة <i class="bi bi-chevron-up"></i></span>`;
+  syncCartBar();
+}
+function syncCartBar() { const b = $('#cartbar'), x = $('#cartBox'); if (b && x) b.classList.toggle('hide', x.getBoundingClientRect().top < innerHeight * 0.55); }
+window.addEventListener('scroll', syncCartBar, { passive: true });
 function calcUI(init) {
   const c = State.cart, t = cartCalc(), set = (id, v) => { const e = $('#' + id); if (e) e.textContent = v; };
   set('t-sub', money(t.sub)); set('t-tax', money(t.tax)); set('t-total', money(t.total)); set('t-usd', usd(t.total));
@@ -1419,6 +1505,7 @@ function calcUI(init) {
   if (pi && (init || c.paid === null) && document.activeElement !== pi) pi.value = c.paid === null ? String(t.total) : c.paid;
   else if (pi && c.paid === null) pi.value = String(t.total);
   const full = c.paid === null, zero = c.paid !== null && toNum(c.paid) === 0;
+  drawCartBar(t, c);
   const ch = $('#paychips'); if (ch) ch.innerHTML = `<button data-act="pay-full" class="${full ? 'on' : ''}">كامل المبلغ</button><button data-act="pay-half">النصف</button><button data-act="pay-zero" class="${zero ? 'on' : ''}">آجل (0)</button>`;
   const r = $('#t-result');
   if (r) r.innerHTML = !c.items.length ? '' : t.due > 0.009
@@ -1634,7 +1721,7 @@ A['open-sale'] = async el => { const s = await db.sales.get(+el.dataset.id); if 
 
 /* ---------- قارئ الباركود (USB) والاختصارات ---------- */
 async function handleBarcode(code) {
-  const p = State.bcmap.get(latinDigits(code).trim());
+  const p = State.bcmap.get(bcKey(code));
   if (p) { addToCart(p); return true; }
   toast('الباركود غير مسجّل: ' + code, 'warning'); beep(200, 150);
   if (can('products_edit') && await confirmBox('المنتج غير موجود. تريد إضافته الآن؟')) openProductForm(null, { barcode: code });
@@ -1650,9 +1737,9 @@ function globalKeys(e) {
     if (e.key === 'F8') { e.preventDefault(); A['cart-hold'](); return; }
     if (!typing && !e.ctrlKey && !e.altKey && !e.metaKey) {
       const now = Date.now();
-      if (now - scanLast > 90) scanBuf = '';
+      if (now - scanLast > 150) scanBuf = '';
       scanLast = now;
-      if (e.key === 'Enter') { if (scanBuf.length >= 4) { e.preventDefault(); handleBarcode(scanBuf); } scanBuf = ''; }
+      if (e.key === 'Enter') { if (scanBuf.length >= 3) { e.preventDefault(); handleBarcode(scanBuf); } scanBuf = ''; }
       else if (e.key.length === 1) scanBuf += e.key;
     }
   }
@@ -1668,29 +1755,29 @@ function normInvNo(q) {
 }
 async function viewReturns(el, params) {
   el.innerHTML = `<div class="stage"><h5 class="mb-3">المرتجعات</h5>
-    <div class="cardx mb-3"><label class="form-label">رقم الفاتورة الأصلية</label>
-      <div class="sbar"><i class="bi bi-receipt"></i><input id="r-q" placeholder="مثال: INV-0001 أو 1" autocomplete="off" class="mono"><button id="r-cam" type="button" aria-label="مسح"><i class="bi bi-camera-fill"></i></button><button id="r-go" type="button"><i class="bi bi-search"></i></button></div>
+    <div class="cardx mb-3"><label class="form-label">ابحث عن الفاتورة</label>
+      <div class="sbar"><i class="bi bi-receipt"></i><input id="r-q" placeholder="رقم الفاتورة أو اسم المنتج أو الزبون" autocomplete="off"><button id="r-cam" type="button" aria-label="مسح"><i class="bi bi-camera-fill"></i></button><button id="r-go" type="button"><i class="bi bi-search"></i></button></div>
       <div id="r-recent" class="mt-3"></div></div>
     <div id="r-sale"></div>
     <div class="cardx mt-3"><h6 class="sec-title"><i class="bi bi-clock-history"></i> سجل المرتجعات</h6><div id="r-hist"></div></div></div>`;
-  const go_ = async q => { if (!norm(q)) return; const s = await db.sales.where('no').equals(normInvNo(q)).first(); if (!s) return toast('لم أجد فاتورة بهذا الرقم', 'warning'); loadSaleForReturn(s); };
+  const go_ = async q => { if (!norm(q)) return; let s = null; try { s = await db.sales.where('no').equals(normInvNo(q)).first(); } catch { } if (s) { loadSaleForReturn(s); $('#r-sale').scrollIntoView({ behavior: 'smooth', block: 'start' }); } else { RD.q = q; drawReturnDays(); } };
+  $('#r-q').addEventListener('input', e => { clearTimeout(RD.t); RD.t = setTimeout(() => { RD.q = e.target.value; drawReturnDays(); }, 200); });
   $('#r-go').onclick = () => go_($('#r-q').value);
   $('#r-q').addEventListener('keydown', e => { if (e.key === 'Enter') go_(e.target.value); });
   $('#r-cam').onclick = async () => { try { const c = await scanBarcode(); if (c) { $('#r-q').value = c; go_(c); } } catch (e) { fail(e); } };
-  const recent = await db.sales.orderBy('ts').reverse().limit(8).toArray();
-  $('#r-recent').innerHTML = recent.length ? `<div class="small text-muted mb-1">آخر الفواتير</div><div class="chips">${recent.map(s => `<button class="fchip" data-act="r-load" data-no="${s.no}">${s.no} · ${money(s.total)}</button>`).join('')}</div>` : '';
+  drawReturnDays();
   const rets = await db.returns.orderBy('ts').reverse().limit(40).toArray();
   $('#r-hist').innerHTML = rets.length ? rets.map(r => `<div class="rowx"><div class="grow"><div class="t">${esc(r.no)} <span class="chip mut">${esc(r.saleNo)}</span></div><div class="s">${fmtDT(r.ts)}${r.customerName ? ' · ' + esc(r.customerName) : ''} · ${r.method === 'debt' ? 'خصم من الدين' : 'نقداً'}</div></div><b class="num text-danger">${money(r.total)}</b></div>`).join('') : empty('bi-arrow-return-left', 'لا توجد مرتجعات بعد');
   if (params && params[0]) go_(params[0]);
 }
-A['r-load'] = async el => { const s = await db.sales.where('no').equals(el.dataset.no).first(); if (s) loadSaleForReturn(s); };
+A['r-load'] = async el => { const s = await db.sales.where('no').equals(el.dataset.no).first(); if (s) { loadSaleForReturn(s); $('#r-sale').scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
 function loadSaleForReturn(s) {
   RV.sale = s;
   const box = $('#r-sale');
   if (s.status === 'void') { box.innerHTML = `<div class="banner"><i class="bi bi-x-octagon"></i><div>هذه الفاتورة ملغاة ولا يمكن إرجاعها.</div></div>`; return; }
   const ratio = s.subtotal > 0 ? s.total / s.subtotal : 1;
   box.innerHTML = `<div class="cardx"><div class="d-flex justify-content-between flex-wrap gap-2 mb-2"><div><b class="mono">${esc(s.no)}</b> <span class="text-muted small">${fmtDT(s.ts)}</span>${s.customerName ? `<div class="small">الزبون: <b>${esc(s.customerName)}</b></div>` : ''}</div><div class="fw-bold num">${money(s.total)}</div></div>
-    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>الصنف</th><th>بيع</th><th>مرتجع سابقاً</th><th>الكمية المرتجعة</th></tr></thead><tbody>
+    <button class="btn btn-soft btn-sm mb-2" type="button" id="r-all"><i class="bi bi-check-all"></i> إرجاع كل الأصناف</button><div class="tbl-wrap"><table class="tbl"><thead><tr><th>الصنف</th><th>بيع</th><th>مرتجع سابقاً</th><th>الكمية المرتجعة</th></tr></thead><tbody>
     ${s.items.map((l, i) => { const max = round2(l.qty - (l.returnedQty || 0)); return `<tr><td>${esc(l.name)}<div class="small text-muted num">${fmtNum(l.price * ratio)} للوحدة</div></td><td class="num">${fmtNum(l.qty)}</td><td class="num">${fmtNum(l.returnedQty || 0)}</td>
       <td>${max > 0 ? `<div class="qty"><button data-act="r-dec" data-i="${i}">−</button><input class="r-qty" data-i="${i}" data-max="${max}" inputmode="decimal" value="0"><button data-act="r-inc" data-i="${i}">+</button></div>` : '<span class="chip mut">تم إرجاعه</span>'}</td></tr>`; }).join('')}</tbody></table></div>
     <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
@@ -1707,9 +1794,26 @@ function loadSaleForReturn(s) {
     i.value = Math.max(0, Math.min(+i.dataset.max, toNum(i.value) + d)); upd();
   };
   $('#r-do').onclick = () => doReturn(s, ratio);
+  $('#r-all').onclick = () => { $$('.r-qty').forEach(i => { i.value = i.dataset.max; }); upd(); };
   box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 A['r-inc'] = () => { }; A['r-dec'] = () => { };
+const RD = { q: '', days: 14, t: 0 };
+const dayStart = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const dayLabel = ts => { const d0 = dayStart(Date.now()), d = dayStart(ts); if (d === d0) return 'اليوم'; if (d === d0 - DAY) return 'أمس'; return new Date(ts).toLocaleDateString('ar-IQ-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' }); };
+const fmtHM = ts => new Date(ts).toLocaleTimeString('ar-IQ-u-nu-latn', { hour: '2-digit', minute: '2-digit' });
+async function drawReturnDays() {
+  const box = $('#r-recent'); if (!box) return;
+  const from = dayStart(Date.now()) - (RD.days - 1) * DAY, q = norm(RD.q || '');
+  let all = (await db.sales.where('ts').aboveOrEqual(from).toArray()).filter(s => s.status !== 'void').sort((a, b) => b.ts - a.ts);
+  if (q) all = all.filter(s => norm([s.no, s.customerName || '', ...s.items.map(l => l.name)].join(' ')).includes(q));
+  const more = `<button type="button" class="btn btn-soft w-100 mt-3" data-act="rd-more"><i class="bi bi-clock-history"></i> عرض أيام أقدم</button>`;
+  if (!all.length) { box.innerHTML = empty('bi-receipt', q ? 'لا توجد نتائج — جرّب كلمة أخرى أو اعرض أياماً أقدم' : 'لا توجد فواتير في هذه الفترة') + more; return; }
+  const groups = [];
+  for (const s of all) { const k = dayStart(s.ts); let g = groups[groups.length - 1]; if (!g || g.k !== k) groups.push(g = { k, list: [] }); g.list.push(s); }
+  box.innerHTML = groups.map(g => `<div class="rd-day"><b>${dayLabel(g.k)}</b><span>${fmtNum(g.list.length)} فاتورة · ${money(g.list.reduce((a, s) => a + s.total, 0))}</span></div>` + g.list.slice(0, 60).map(s => { const names = s.items.slice(0, 2).map(l => l.name).join('، ') + (s.items.length > 2 ? ` +${fmtNum(s.items.length - 2)}` : ''); return `<div class="rowx rd-row" data-act="r-load" data-no="${esc(s.no)}"><div class="grow"><div class="t"><span class="mono">${esc(s.no)}</span> <span class="small text-muted">${fmtHM(s.ts)}</span>${s.returnedTotal > 0 ? ' <span class="chip warn">مرتجع جزئي</span>' : ''}</div><div class="s">${esc(names)}${s.customerName ? ' · ' + esc(s.customerName) : ''}</div></div><b class="num">${money(s.total)}</b><i class="bi bi-chevron-left text-muted"></i></div>`; }).join('')).join('') + more;
+}
+A['rd-more'] = () => { RD.days += 14; drawReturnDays(); };
 async function doReturn(s, ratio) {
   const picks = [];
   $$('.r-qty').forEach(i => { const q = Math.min(toNum(i.value), +i.dataset.max); if (q > 0) picks.push({ i: +i.dataset.i, q: round2(q) }); });
@@ -1779,8 +1883,8 @@ async function viewDashboard(el) {
       ${qa('bi-cart-plus-fill', 'بيع', { a: 'go', to: 'pos' }, '#0e8f6a', '#35c79a')}${qa('bi-arrow-return-left', 'مرتجع', { a: 'go', to: 'returns' }, '#d6264b', '#f0668f')}
       ${can('products_edit') ? qa('bi-box-seam-fill', 'إضافة منتج', { a: 'p-add' }, '#d9730d', '#f6a94a') : qa('bi-people-fill', 'الزبائن', { a: 'go', to: 'customers' }, '#c2255c', '#f0668f')}
       ${can('reports') ? qa('bi-graph-up-arrow', 'تقارير', { a: 'go', to: 'reports' }, '#6d3fc9', '#a47cf0') : qa('bi-safe-fill', 'الصندوق', { a: 'go', to: 'shift' }, '#6d3fc9', '#a47cf0')}</div>
-    <div class="cardx mb-3"><h6 class="sec-title"><i class="bi bi-bar-chart-fill"></i> مبيعات آخر 7 أيام</h6>
-      <div class="bars">${days.map((x, i) => `<div class="bar ${i === 6 ? 'today' : ''}" data-act="bar-tip"><div class="col" style="height:${Math.max(3, x.v / mx * 100)}%">${x.v ? `<span class="v">${compact(x.v)}</span>` : ''}</div>
+    <div class="cardx mb-3"><h6 class="sec-title"><i class="bi bi-bar-chart-fill"></i> مبيعات آخر 7 أيام ${mx >= 1e6 ? '<small class="text-muted fw-normal">(بالملايين)</small>' : mx >= 1e3 ? '<small class="text-muted fw-normal">(بالآلاف)</small>' : ''}</h6>
+      <div class="bars">${days.map((x, i) => `<div class="bar ${i === 6 ? 'today' : ''}" data-act="bar-tip"><div class="col" style="height:${Math.max(3, x.v / mx * 100)}%">${x.v ? `<span class="v">${barLbl(x.v, mx)}</span>` : ''}</div>
         <span class="d">${new Date(x.d).toLocaleDateString(loc(), { weekday: 'short' })}</span><span class="tip">${fmtDate(x.d)} — ${money(x.v)}</span></div>`).join('')}</div></div>
     <div class="row g-3"><div class="col-md-6"><div class="cardx h-100"><h6 class="sec-title"><i class="bi bi-trophy-fill"></i> الأكثر مبيعاً هذا الشهر</h6>
       ${top.length ? top.map((t, i) => `<div class="rowx"><span class="chip">${i + 1}</span><div class="grow"><div class="t">${esc(t.name)}</div><div class="s">${fmtNum(t.qty)} مبيع</div></div><b class="num">${money(t.amt)}</b></div>`).join('') : empty('bi-trophy', 'لا توجد مبيعات هذا الشهر')}</div></div>
@@ -2016,7 +2120,7 @@ A['c-flt'] = el => { CV.flt = el.dataset.v; viewCustomers($('#view')); };
    المشتريات والموردون
    ===================================================================== */
 const PU = { tab: 'new', q: '' };
-const newPCart = () => ({ supplierId: null, items: [], paid: '', method: 'cash', note: '' });
+const newPCart = () => ({ supplierId: null, items: [], paid: '', method: 'cash', note: '', images: [] });
 async function viewPurchases(el) {
   if (!State.pcart) State.pcart = newPCart();
   el.innerHTML = `<div class="stage"><h5 class="mb-3">المشتريات والموردون</h5>
@@ -2052,7 +2156,7 @@ function drawPCart() {
     <div class="row g-2 mt-1"><div class="col-7"><label class="form-label m-0">المدفوع للمورد</label><input class="form-control num" id="pc-paid" inputmode="decimal" value="${c.paid === '' ? total : esc(c.paid)}"></div>
       <div class="col-5"><label class="form-label m-0">الطريقة</label><select class="form-select" id="pc-method">${Object.entries(METHODS).map(([k, v]) => `<option value="${k}" ${c.method === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div></div>
     ${due > 0 ? `<div class="chip bad w-100 justify-content-between py-2 mt-2"><span>المتبقي للمورد (دين)</span><b class="num">${money(due)}</b></div>${sup ? '' : '<div class="small text-danger mt-1">اختر مورداً لتسجيل الآجل</div>'}` : ''}
-    <button class="btn btn-accent btn-lg w-100 mt-3" data-act="pc-save" ${c.items.length ? '' : 'disabled'}><i class="bi bi-check2-circle"></i> حفظ فاتورة الشراء</button></div>`;
+    ${receiptImgsHTML(c)}<button class="btn btn-accent btn-lg w-100 mt-3" data-act="pc-save" ${c.items.length ? '' : 'disabled'}><i class="bi bi-check2-circle"></i> حفظ فاتورة الشراء</button></div>`;
   box.onchange = e => {
     const t = e.target;
     if (t.classList.contains('pc-f')) { const l = c.items[+t.dataset.i], k = t.dataset.k; l[k] = (k === 'exp') ? t.value : (k === 'retail' && t.value === '' ? '' : toNum(t.value)); drawPCart(); }
@@ -2062,6 +2166,23 @@ function drawPCart() {
 }
 A['pc-del'] = el => { State.pcart.items.splice(+el.dataset.i, 1); drawPCart(); };
 A['pc-clear'] = () => { State.pcart = newPCart(); drawPCart(); };
+const fileToDataURL = (file, max = 2000, q = 0.7) => new Promise((res, rej) => {
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement('canvas'); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url); res(cv.toDataURL('image/jpeg', q)); };
+  img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('تعذّر قراءة الصورة')); }; img.src = url;
+});
+function receiptImgsHTML(c) {
+  const im = c.images || [];
+  return `<div class="mt-3"><div class="d-flex justify-content-between mb-1"><b class="small"><i class="bi bi-image"></i> صورة الوصل (توثيق)</b><span class="small text-muted">${im.length}/4</span></div><div class="d-flex flex-wrap gap-2">${im.map((u, i) => `<div class="rimg"><img src="${u}" data-act="img-view" alt="وصل"><button type="button" class="icb danger" data-act="pc-img-del" data-i="${i}" aria-label="حذف"><i class="bi bi-x-lg"></i></button></div>`).join('')}${im.length < 4 ? `<button type="button" class="rimg add" data-act="pc-img" data-cam="1"><i class="bi bi-camera-fill"></i><span>تصوير</span></button><button type="button" class="rimg add" data-act="pc-img"><i class="bi bi-images"></i><span>من المعرض</span></button>` : ''}</div></div>`;
+}
+A['pc-img'] = el => {
+  const c = State.pcart; if (!c.images) c.images = [];
+  const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; if (el.dataset.cam) i.setAttribute('capture', 'environment'); else i.multiple = true;
+  i.onchange = async () => { for (const f of [...i.files]) { if (c.images.length >= 4) break; try { c.images.push(await fileToDataURL(f)); } catch (e) { fail(e); } } drawPCart(); };
+  i.click();
+};
+A['pc-img-del'] = el => { State.pcart.images.splice(+el.dataset.i, 1); drawPCart(); };
+A['img-view'] = el => { const src = el.src; openModal({ title: '<i class="bi bi-image"></i> صورة الوصل', size: 'lg', body: `<img src="${src}" alt="" style="width:100%;border-radius:12px;touch-action:pinch-zoom">`, footer: `<a class="btn btn-soft" download="receipt.jpg" href="${src}"><i class="bi bi-download"></i> حفظ</a><button class="btn btn-light" data-mx-close>إغلاق</button>` }); };
 const supLine = o => `<div class="grow"><div class="t">${esc(o.name)}</div><div class="s">${esc(o.phone || '')}</div></div>${o.balance > 0 ? `<span class="chip bad">مستحق ${money(o.balance)}</span>` : ''}`;
 A['pc-sup'] = async () => {
   const r = await pickEntity({ title: 'اختر المورد', list: () => State.suppliers, fields: o => [o.name, o.phone], line: supLine, none: 'بدون مورد (نقدي)', onNew: () => openSupplierForm(null), newLabel: 'مورد جديد' });
@@ -2086,7 +2207,7 @@ A['pc-save'] = async () => {
       }
       let sb = 0; if (sup) { const cu = await db.suppliers.get(sup.id); sb = round2((cu.balance || 0) + due); await db.suppliers.update(sup.id, { balance: sb }); }
       const no = await nextNo('purchase', 'PUR-');
-      rec = { no, ts: Date.now(), supplierId: sup ? sup.id : null, supplierName: sup ? sup.name : '', items: c.items.map(l => ({ pid: l.pid, name: l.name, unit: l.unit, qty: l.qty, cost: l.cost, returnedQty: 0 })), total, paid, due, method: c.method, userName: State.user.name, returnedTotal: 0 };
+      rec = { no, ts: Date.now(), supplierId: sup ? sup.id : null, supplierName: sup ? sup.name : '', items: c.items.map(l => ({ pid: l.pid, name: l.name, unit: l.unit, qty: l.qty, cost: l.cost, returnedQty: 0 })), total, paid, due, method: c.method, userName: State.user.name, returnedTotal: 0, images: c.images || [] };
       rec.id = await db.purchases.add(rec);
     });
     audit('فاتورة شراء', `${rec.no} — ${money(total)}`);
@@ -2103,7 +2224,7 @@ A['pu-open'] = async el => {
     title: `<i class="bi bi-truck"></i> ${esc(p.no)}`,
     body: `<div class="small text-muted mb-2">${fmtDT(p.ts)} · ${esc(p.supplierName || 'بدون مورد')}</div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>المبلغ</th></tr></thead><tbody>
       ${p.items.map(l => `<tr><td>${esc(l.name)}${l.returnedQty ? `<div class="small text-warning">مرتجع ${fmtNum(l.returnedQty)}</div>` : ''}</td><td class="num">${fmtNum(l.qty)}</td><td class="num">${fmtNum(l.cost)}</td><td class="num">${fmtNum(l.qty * l.cost)}</td></tr>`).join('')}</tbody></table></div>
-      <div class="totals"><div class="r"><span>الإجمالي</span><b class="num">${money(p.total)}</b></div><div class="r"><span>المدفوع</span><span class="num">${money(p.paid)}</span></div><div class="r"><span>المتبقي</span><b class="num">${money(p.due)}</b></div></div>`,
+      <div class="totals"><div class="r"><span>الإجمالي</span><b class="num">${money(p.total)}</b></div><div class="r"><span>المدفوع</span><span class="num">${money(p.paid)}</span></div><div class="r"><span>المتبقي</span><b class="num">${money(p.due)}</b></div></div>${(p.images || []).length ? `<div class="mt-3"><b class="small"><i class="bi bi-image"></i> صورة الوصل</b><div class="d-flex flex-wrap gap-2 mt-1">${p.images.map(u => `<div class="rimg"><img src="${u}" data-act="img-view" alt="وصل"></div>`).join('')}</div></div>` : ''}`,
     footer: `<button class="btn btn-soft" data-ret><i class="bi bi-arrow-return-left"></i> إرجاع للمورد</button><button class="btn btn-light" data-mx-close>إغلاق</button>`
   });
   $('[data-ret]', m.el).onclick = () => { m.close(); openPurchaseReturn(p.id); };
@@ -2466,20 +2587,20 @@ async function viewAudit(el) {
    التنقل والهيكل العام وبدء التشغيل
    ===================================================================== */
 const VIEWS = {
-  dashboard: { fn: viewDashboard, perm: 'view_dashboard', c: ['#2347c5', '#5b7cf0'], title: 'الرئيسية' },
-  pos: { fn: viewPOS, perm: 'sell', c: ['#0e8f6a', '#35c79a'], title: 'البيع ونقطة البيع' },
-  products: { fn: viewProducts, perm: 'products_view', c: ['#d9730d', '#f6a94a'], title: 'المنتجات' },
-  purchases: { fn: viewPurchases, perm: 'purchases', c: ['#0a7ea4', '#3fb6dd'], title: 'المشتريات والموردون' },
-  customers: { fn: viewCustomers, perm: 'customers', c: ['#c2255c', '#f0668f'], title: 'الزبائن' },
-  reports: { fn: viewReports, perm: 'reports', c: ['#6d3fc9', '#a47cf0'], title: 'التقارير' },
-  more: { fn: viewMore, perm: 'view_dashboard', c: ['#3d5a63', '#7f9da6'], title: 'المزيد' },
-  returns: { fn: viewReturns, perm: 'returns', c: ['#c2370f', '#f08a5d'], title: 'المرتجعات' },
-  inventory: { fn: viewInventory, perm: 'inventory_view', c: ['#0b8a86', '#3cc7c2'], title: 'المخزون' },
-  shift: { fn: viewShift, perm: 'shift', c: ['#5b4bd6', '#8f84f2'], title: 'الصندوق' },
-  expenses: { fn: viewExpenses, perm: 'expenses_add', c: ['#b4531f', '#e8925c'], title: 'المصاريف' },
-  settings: { fn: viewSettings, perm: 'settings', c: ['#3d5a63', '#7f9da6'], title: 'الإعدادات' },
-  users: { fn: viewUsers, perm: 'users', c: ['#3d5a63', '#7f9da6'], title: 'المستخدمون' },
-  audit: { fn: viewAudit, perm: 'audit', c: ['#3d5a63', '#7f9da6'], title: 'سجل النشاط' }
+  dashboard: { fn: viewDashboard, perm: 'view_dashboard', c: ['#4f46e5', '#7c3aed'], title: 'الرئيسية' },
+  pos: { fn: viewPOS, perm: 'sell', c: ['#4f46e5', '#7c3aed'], title: 'البيع ونقطة البيع' },
+  products: { fn: viewProducts, perm: 'products_view', c: ['#4f46e5', '#7c3aed'], title: 'المنتجات' },
+  purchases: { fn: viewPurchases, perm: 'purchases', c: ['#4f46e5', '#7c3aed'], title: 'المشتريات والموردون' },
+  customers: { fn: viewCustomers, perm: 'customers', c: ['#4f46e5', '#7c3aed'], title: 'الزبائن' },
+  reports: { fn: viewReports, perm: 'reports', c: ['#4f46e5', '#7c3aed'], title: 'التقارير' },
+  more: { fn: viewMore, perm: 'view_dashboard', c: ['#4f46e5', '#7c3aed'], title: 'المزيد' },
+  returns: { fn: viewReturns, perm: 'returns', c: ['#4f46e5', '#7c3aed'], title: 'المرتجعات' },
+  inventory: { fn: viewInventory, perm: 'inventory_view', c: ['#4f46e5', '#7c3aed'], title: 'المخزون' },
+  shift: { fn: viewShift, perm: 'shift', c: ['#4f46e5', '#7c3aed'], title: 'الصندوق' },
+  expenses: { fn: viewExpenses, perm: 'expenses_add', c: ['#4f46e5', '#7c3aed'], title: 'المصاريف' },
+  settings: { fn: viewSettings, perm: 'settings', c: ['#4f46e5', '#7c3aed'], title: 'الإعدادات' },
+  users: { fn: viewUsers, perm: 'users', c: ['#4f46e5', '#7c3aed'], title: 'المستخدمون' },
+  audit: { fn: viewAudit, perm: 'audit', c: ['#4f46e5', '#7c3aed'], title: 'سجل النشاط' }
 };
 const NAV = [
   ['dashboard', 'الرئيسية', 'bi-grid-1x2-fill'], ['pos', 'البيع', 'bi-cart-check-fill'], ['products', 'المنتجات', 'bi-box-seam-fill'], ['purchases', 'المشتريات', 'bi-truck'],
@@ -2517,7 +2638,7 @@ async function render(keep) {
   if (!State.user) return;
   const seq = ++renderSeq; let [id, ...params] = parseHash(), v = VIEWS[id];
   if (!v || !can(v.perm)) { id = 'dashboard'; v = VIEWS.dashboard; }
-  State.view = id; document.body.dataset.screen = id; setColors(v.c); renderChrome();
+  State.view = id; document.body.dataset.screen = id; if (id !== 'pos') { const cb = $('#cartbar'); if (cb) cb.remove(); } setColors(v.c); renderChrome();
   const el = $('#view');
   try { await v.fn(el, params); }
   catch (e) { console.error(e); if (seq === renderSeq) el.innerHTML = empty('bi-bug', 'حدث خطأ أثناء عرض هذه الشاشة', `<div class="small mt-1">${esc(e.message || '')}</div>`); }
@@ -2551,6 +2672,9 @@ function registerSW() {
   navigator.serviceWorker.register('sw.js').then(reg => {
     if (reg.waiting && navigator.serviceWorker.controller) showUpdate(reg.waiting);
     reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) showUpdate(w); }); });
+    const chk = () => reg.update().catch(() => { });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) chk(); });
+    setInterval(chk, 60 * 60 * 1000);
   }).catch(e => console.warn('SW', e));
   navigator.serviceWorker.addEventListener('controllerchange', () => { if (updating) location.reload(); });
 }
@@ -2575,6 +2699,13 @@ document.addEventListener('change', e => { if (State.view === 'pos') posOnChange
 document.addEventListener('input', e => { if (State.view === 'pos') posOnInput(e); });
 document.addEventListener('keydown', globalKeys);
 window.addEventListener('hashchange', () => render());
+window.addEventListener('offline', () => toast('لا يوجد اتصال — التطبيق يعمل بدون إنترنت', 'warning', 3500));
+window.addEventListener('online', () => toast('عاد الاتصال بالإنترنت', 'success'));
+if (window.visualViewport) {
+  let mh = visualViewport.height;
+  visualViewport.addEventListener('resize', () => { const hh = visualViewport.height; mh = Math.max(mh, hh); document.body.classList.toggle('kb', innerWidth < 768 && hh < mh * 0.78); });
+  window.addEventListener('orientationchange', () => setTimeout(() => { mh = visualViewport.height; document.body.classList.remove('kb'); }, 400));
+}
 window.addEventListener('error', e => { if (/ResizeObserver/.test(e.message || '')) return; console.error(e.error || e.message); });
 window.addEventListener('unhandledrejection', e => { console.error(e.reason); if (e.reason && e.reason.name === 'QuotaExceededError') toast('مساحة التخزين ممتلئة!', 'danger'); });
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (S.theme === 'auto') applyTheme(); });

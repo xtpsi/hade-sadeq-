@@ -1,19 +1,21 @@
 /* Service Worker — يخزّن التطبيق ومكتباته ليعمل بدون إنترنت.
    عند تعديل أي ملف: غيّر رقم VERSION ليظهر للمستخدم "تحديث متاح". */
-const VERSION = 'pos-v1.0.0';
-const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
-const CDN = [
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css',
-  'https://cdn.jsdelivr.net/npm/dexie@3.2.7/dist/dexie.min.js',
-  'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js',
-  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
-  'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
-  'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap'
+const VERSION = 'pos-v1.4.0';
+const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-180.png', './icon-maskable-512.png'];
+const J = 'https://cdn.jsdelivr.net/npm/';
+/* [مسار محلي في vendor/، رابط الإنترنت البديل] — يُستخدم المحلي إن وُجد */
+const LIBS = [
+  ['./vendor/fonts.css', 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap'],
+  ['./vendor/bootstrap.rtl.min.css', J + 'bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css'],
+  ['./vendor/bootstrap-icons/bootstrap-icons.min.css', J + 'bootstrap-icons@1.11.3/font/bootstrap-icons.min.css'],
+  ['./vendor/dexie.min.js', J + 'dexie@3.2.7/dist/dexie.min.js'],
+  ['./vendor/JsBarcode.all.min.js', J + 'jsbarcode@3.11.6/dist/JsBarcode.all.min.js'],
+  ['./vendor/xlsx.full.min.js', J + 'xlsx@0.18.5/dist/xlsx.full.min.js'],
+  ['./vendor/html5-qrcode.min.js', J + 'html5-qrcode@2.3.8/html5-qrcode.min.js']
 ];
 
 async function putCDN(cache, url) {
-  const res = await fetch(url, { mode: 'cors', credentials: 'omit' }).catch(() => fetch(new Request(url, { mode: 'no-cors' })));
+  const res = await fetch(url, { mode: 'cors', credentials: 'omit' }).catch(() => fetch(new Request(url, { mode: 'no-cors' }))).catch(() => null);
   if (res && (res.ok || res.type === 'opaque')) await cache.put(url, res.clone());
   return res;
 }
@@ -22,7 +24,7 @@ async function cacheCssAssets(cache, cssUrl, res) {
   try {
     const text = await res.clone().text();
     const urls = [...text.matchAll(/url\(["']?([^"')]+)["']?\)/g)].map(m => m[1]).filter(u => !u.startsWith('data:'));
-    await Promise.allSettled(urls.map(u => putCDN(cache, new URL(u, cssUrl).href)));
+    await Promise.allSettled(urls.map(u => putCDN(cache, new URL(u, new URL(cssUrl, self.location.href).href).href)));
   } catch { }
 }
 
@@ -30,16 +32,17 @@ self.addEventListener('install', e => {
   e.waitUntil((async () => {
     const cache = await caches.open(VERSION);
     await Promise.allSettled(CORE.map(u => cache.add(u)));
-    await Promise.allSettled(CDN.map(async u => {
-      const res = await putCDN(cache, u);
-      if (res && res.ok && u.endsWith('.css') || u.includes('fonts.googleapis.com')) await cacheCssAssets(cache, u, res);
+    await Promise.allSettled(LIBS.map(async ([local, cdn]) => {
+      let url = local, res = await fetch(local).then(r => (r.ok && !/html/i.test(r.headers.get('content-type') || '')) ? r : null).catch(() => null);
+      if (res) await cache.put(local, res.clone()); else { url = cdn; res = await putCDN(cache, cdn); }
+      if (res && res.ok && (/\.css$/.test(url) || url.includes('fonts.googleapis.com'))) await cacheCssAssets(cache, url, res);
     }));
   })());
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k !== VERSION) await caches.delete(k);
+    for (const k of await caches.keys()) if (k.startsWith('pos-') && k !== VERSION) await caches.delete(k);
     await self.clients.claim();
   })());
 });
