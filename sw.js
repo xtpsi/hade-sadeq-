@@ -1,6 +1,6 @@
 /* Service Worker — يخزّن التطبيق ومكتباته ليعمل بدون إنترنت.
    عند تعديل أي ملف: غيّر رقم VERSION ليظهر للمستخدم "تحديث متاح". */
-const VERSION = 'pos-v1.4.0';
+const VERSION = 'pos-v1.4.1';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-180.png', './icon-maskable-512.png'];
 const J = 'https://cdn.jsdelivr.net/npm/';
 /* [مسار محلي في vendor/، رابط الإنترنت البديل] — يُستخدم المحلي إن وُجد */
