@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-bs-theme="light">
+<html lang="ar" dir="rtl" data-bs-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -365,6 +365,38 @@ body{background:radial-gradient(900px 420px at 100% -8%,color-mix(in srgb,var(--
   #printArea .inv{padding:0;border-radius:0}
   #printArea.p-a4h .inv{height:134mm;overflow:hidden}
 }
+
+/* ===== تابلت + وصل واضح + شارة الكمية ===== */
+.qbtn .qf{display:flex;justify-content:space-between;align-items:center;gap:4px}
+.qbtn .st{position:static;inset:auto;font-size:.68rem;padding:1px 7px}
+.rc .text-muted,.rc .mut,.rc small,.rc .small,.inv .text-muted,.inv small{color:#333!important}
+.rc hr{border-top-color:#555}.rc td{border-bottom-color:#999}
+.inv-words{margin-top:5px;font-weight:700;border:1px solid #000;padding:2px 8px}
+@media print{
+  #printArea,#printArea *{color:#000!important;background:transparent!important;text-shadow:none!important}
+  #printArea .rc,#printArea .inv{font-weight:500}
+  #printArea .rc{font-size:13px}#printArea.p-58 .rc{font-size:11.5px}
+  #printArea .inv .void,#printArea .rc .void{color:rgba(0,0,0,.15)!important}
+}
+@media(min-width:900px){
+  body{padding-inline-start:92px}
+  .bnav{inset-inline-start:0;inset-inline-end:auto;top:0;bottom:0;width:92px;flex-direction:column;justify-content:flex-start;gap:4px;padding:96px 4px 16px;border-top:0;border-inline-end:1px solid var(--line)}
+  .bnav a{flex:0 0 auto;padding:8px 0}
+  .bnav a.active i,.bnav a.active span{transform:none}.bnav a.active::after{display:none}
+  .cartbar{display:none}
+  main#view,body[data-screen=pos] main#view{padding-bottom:28px}
+  .row>.col-lg-7{flex:0 0 auto;width:58.33333%}.row>.col-lg-5{flex:0 0 auto;width:41.66667%}.row>.col-lg-6{flex:0 0 auto;width:50%}
+  #cartBox{position:sticky;top:84px;max-height:calc(100dvh - 100px);overflow:auto}
+  .fab{bottom:24px}
+}
+
+/* ===== جداول وقوائم ===== */
+.rd-t tbody tr{cursor:pointer}.rd-t tbody tr:active{background:var(--accent-soft)}.rd-t .rd-done{opacity:.45}.rd-t td{vertical-align:middle}
+.tbl-wrap{max-height:68dvh;overflow:auto;-webkit-overflow-scrolling:touch}
+.tbl thead th{position:sticky;top:0;z-index:2;background:var(--surface)}
+.tbl tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}
+
+.syban{position:fixed;top:74px;inset-inline-start:10px;z-index:1031;background:var(--warn);color:#000;border-radius:999px;padding:3px 12px;font-size:.74rem;font-weight:700;box-shadow:var(--shadow);pointer-events:none}
 </style>
 </head>
 <body data-screen="dashboard">
@@ -382,7 +414,7 @@ body{background:radial-gradient(900px 420px at 100% -8%,color-mix(in srgb,var(--
 /* =====================================================================
    نظام المبيعات والمخزون — PWA يعمل بدون إنترنت
    ===================================================================== */
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.8.0';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -438,7 +470,7 @@ const DEFAULTS = {
   shopName: 'محلي', shopPhone: '', shopAddress: '', shopLogo: '', footerMsg: 'شكراً لتعاملكم معنا',
   currencySymbol: 'د.ع', usdRate: 1500, showUsd: false, taxRate: 0, paper: '80', countryCode: '964',
   lowStockDefault: 5, expiryDays: 30, allowNegative: false, costMethod: 'avg',
-  theme: 'auto', fontScale: 100, arabicDigits: false, sound: true,
+  theme: 'dark', fontScale: 100, arabicDigits: false, sound: true,
   lockEnabled: true, backupDays: 7, lastBackup: 0, labelsPerPage: 24, labelCols: 3, quickCount: 12, setupDone: false
 };
 let S = { ...DEFAULTS };
@@ -501,7 +533,7 @@ const IDX = new Map(); // فهرس البحث
 
 /* ---------- الصلاحيات ---------- */
 const CASHIER_PERMS = new Set(['view_dashboard', 'sell', 'products_view', 'customers', 'customers_edit', 'pay_customer', 'returns', 'inventory_view', 'expenses_add', 'shift']);
-const can = p => !!State.user && (State.user.role === 'admin' || CASHIER_PERMS.has(p));
+const can = p => !!State.user && (SY.cfg.role === 'viewer' ? SY_VIEW_OK.has(p) : (State.user.role === 'admin' || CASHIER_PERMS.has(p)));
 
 /* ---------- PIN ---------- */
 function cyrb53(str, seed = 0) {
@@ -923,7 +955,8 @@ window.addEventListener('afterprint', () => { const a = $('#printArea'); if (a) 
 /* ---------- تحميل المكتبات الثقيلة عند الحاجة (تُخزَّن للعمل بدون إنترنت) ---------- */
 const LIBS = {
   xlsx: { url: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', local: 'vendor/xlsx.full.min.js', g: 'XLSX' },
-  qr: { url: 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js', local: 'vendor/html5-qrcode.min.js', g: 'Html5Qrcode' }
+  qr: { url: 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js', local: 'vendor/html5-qrcode.min.js', g: 'Html5Qrcode' },
+  h2c: { url: 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js', local: 'vendor/html2canvas.min.js', g: 'html2canvas' }
 };
 const libP = {};
 function ensureLib(k) {
@@ -1203,6 +1236,7 @@ async function openProductForm(id, prefill = {}) {
     const nd = State.products.find(x => norm(x.name) === norm(name) && x.id !== id);
     if (nd && !await confirmBox(`يوجد منتج بنفس الاسم: <b>${esc(nd.name)}</b>. تريد المتابعة؟`)) return;
     if (buy > ret && !await confirmBox('سعر الشراء أكبر من سعر البيع! تريد المتابعة؟')) return;
+    if (!buy && !await confirmBox('سعر الشراء صفر، فسيظهر الربح أعلى من الحقيقي. تريد المتابعة؟')) return;
     const category = g('pf-cat').value.trim();
     const rec = {
       name, barcode, category, unit: g('pf-unit').value.trim() || 'قطعة', buyPrice: buy, retailPrice: ret,
@@ -1339,7 +1373,8 @@ async function importProductsFile(file) {
     plan.push({ ex, rec });
   });
   const add = plan.filter(x => !x.ex).length, upd = plan.length - add;
-  const ok = await confirmBox(`سيتم <b>إضافة ${fmtNum(add)}</b> منتج جديد و<b>تحديث ${fmtNum(upd)}</b> منتج موجود.${errors.length ? `<br><span class="text-danger small">${fmtNum(errors.length)} سطر سيتم تجاهله.</span>` : ''}`, { title: 'استيراد من Excel', ok: 'استيراد' });
+  const sus = plan.filter(x => { const b = x.rec.buyPrice ?? x.ex?.buyPrice ?? 0, r = x.rec.retailPrice ?? x.ex?.retailPrice ?? 0; return r > 0 && (!b || b >= r); }).length;
+  const ok = await confirmBox(`سيتم <b>إضافة ${fmtNum(add)}</b> منتج جديد و<b>تحديث ${fmtNum(upd)}</b> منتج موجود.${errors.length ? `<br><span class="text-danger small">${fmtNum(errors.length)} سطر سيتم تجاهله.</span>` : ''}${sus ? `<br><span class="text-warning small">⚠ ${fmtNum(sus)} منتج سعر شرائه صفر أو أعلى من البيع — راجعها من «تدقيق الأسعار».</span>` : ''}`, { title: 'استيراد من Excel', ok: 'استيراد' });
   if (!ok) return;
   const now = Date.now(), newCats = new Set();
   await db.transaction('rw', db.products, db.categories, db.stockLog, async () => {
@@ -1455,8 +1490,7 @@ function drawQuick() {
   const q = quickList();
   g.innerHTML = q.length ? q.map(p => {
     const st = stockState(p);
-    return `<button class="qbtn" data-act="q-add" data-id="${p.id}"><span class="n">${esc(p.name)}</span><span class="p num">${money(p.retailPrice)}</span>
-      <span class="st chip ${st === 'ok' ? 'ok' : st === 'low' ? 'warn' : 'bad'}">${st === 'out' ? 'نفد' : fmtNum(p.qty)}</span></button>`;
+    return `<button class="qbtn" data-act="q-add" data-id="${p.id}"><span class="n">${esc(p.name)}</span><span class="qf"><span class="p num">${money(p.retailPrice)}</span><span class="st chip ${st === 'ok' ? 'ok' : st === 'low' ? 'warn' : 'bad'}">${st === 'out' ? 'نفد' : fmtNum(p.qty)}</span></span></button>`;
   }).join('') : empty('bi-lightning', 'فعّل "الأزرار السريعة" من نموذج المنتج، أو بيع كم منتج وراح تظهر هنا تلقائياً');
 }
 A['q-add'] = el => { const p = State.pmap.get(+el.dataset.id); if (p) addToCart(p); };
@@ -1496,6 +1530,7 @@ function drawCart() {
       <h6 class="sec-title m-0 flex-grow-1"><i class="bi bi-cart3"></i> السلة <span class="chip">${fmtNum(c.items.length)}</span></h6>
       <div class="tabs" style="margin:0;padding:3px"><button data-act="cart-mode" data-v="retail" class="${c.priceMode === 'retail' ? 'on' : ''}">مفرد</button><button data-act="cart-mode" data-v="wholesale" class="${c.priceMode === 'wholesale' ? 'on' : ''}">جملة</button></div>
       <button class="icb" style="position:relative" data-act="cart-held" aria-label="الفواتير المعلّقة"><i class="bi bi-pause-circle"></i><span class="dotbadge" id="heldn" hidden></span></button>
+      <button class="icb" data-act="cart-quote" aria-label="عرض سعر"><i class="bi bi-file-earmark-text"></i></button>
       <button class="icb danger" data-act="cart-clear" aria-label="مسح السلة"><i class="bi bi-trash3"></i></button></div>
     <div id="clines" style="max-height:44vh;overflow:auto">${lines || empty('bi-cart', 'السلة فارغة<div class="small">ابحث عن منتج أو اضغط على زر سريع</div>')}</div>
     <div class="totals">
@@ -1692,6 +1727,16 @@ function receiptHTML(s) {
     ${s.returnedTotal > 0 ? tot('إجمالي المرتجع', money(s.returnedTotal)) : ''}<hr>
     <div class="c">${S.footerMsg ? `<div>${esc(S.footerMsg)}</div>` : ''}<svg class="bc" data-code="${esc(s.no)}"></svg></div></div>`;
 }
+const AR1 = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة', 'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+const AR10 = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+const AR100 = ['', 'مائة', 'مائتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
+function arWords3(n) { const hh = Math.floor(n / 100), r = n % 100, p = []; if (hh) p.push(AR100[hh]); if (r) { if (r < 20) p.push(AR1[r]); else { const o = r % 10, t = Math.floor(r / 10); p.push(o ? AR1[o] + ' و' + AR10[t] : AR10[t]); } } return p.join(' و'); }
+function numToArabicWords(n) {
+  n = Math.round(Number(n) || 0); if (!n) return 'صفر'; if (n < 0) return 'سالب ' + numToArabicWords(-n);
+  const sc = [['', '', ''], ['ألف', 'ألفان', 'آلاف'], ['مليون', 'مليونان', 'ملايين'], ['مليار', 'ملياران', 'مليارات']]; let i = 0; const out = [];
+  while (n > 0) { const g = n % 1000; if (g) { const s = sc[i] || sc[3]; out.unshift(i === 0 ? arWords3(g) : g === 1 ? s[0] : g === 2 ? s[1] : g <= 10 ? arWords3(g) + ' ' + s[2] : arWords3(g) + ' ' + s[0]); } n = Math.floor(n / 1000); i++; }
+  return out.join(' و');
+}
 const isA5 = () => ['a5', 'a5h', 'a4h'].includes(S.paper);
 function invoiceHTML(s, copy = '') {
   const rows = s.items.map((l, i) => `<tr><td class="n">${fmtNum(i + 1)}</td><td>${esc(l.name)}${l.priceType === 'wholesale' ? ' <small>(جملة)</small>' : ''}${l.returnedQty ? ` <small>(مرتجع ${fmtNum(l.returnedQty)})</small>` : ''}</td><td class="n">${fmtNum(l.qty)}${l.unit && l.unit !== 'قطعة' ? ' ' + esc(l.unit) : ''}</td><td class="n">${fmtNum(l.price)}</td><td class="n">${fmtNum(l.qty * l.price)}</td></tr>`).join('');
@@ -1701,9 +1746,107 @@ function invoiceHTML(s, copy = '') {
       <div class="inv-title"><b>فاتورة بيع</b>${copy ? `<div class="copy">${copy}</div>` : ''}<div>رقم: <b class="mono">${esc(s.no)}</b></div><div>التاريخ: <span class="num">${fmtDT(s.ts)}</span></div></div></div>
     <div class="inv-meta">${s.customerName ? `<div>الزبون: <b>${esc(s.customerName)}</b></div>` : ''}<div>الدفع: ${METHODS[s.method] || ''}</div>${s.userName ? `<div>الكاشير: ${esc(s.userName)}</div>` : ''}</div>
     <table class="inv-t"><thead><tr><th>#</th><th>المادة</th><th>الكمية</th><th>السعر</th><th>المبلغ</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="inv-words">فقط ${numToArabicWords(s.total)} دينار عراقي لا غير</div>
     <div class="inv-f"><div class="inv-note">${S.footerMsg ? `<div>${esc(S.footerMsg)}</div>` : ''}${s.returnedTotal > 0 ? `<div>إجمالي المرتجع: ${money(s.returnedTotal)}</div>` : ''}<div class="sign"><span>المستلم: ..............</span><span>المحاسب: ..............</span></div></div>
       <div class="inv-tot">${t('المجموع', money(s.subtotal))}${s.discount > 0 ? t('الخصم', '- ' + money(s.discount)) : ''}${s.tax > 0 ? t('الضريبة', money(s.tax)) : ''}${t('الإجمالي', money(s.total), 'g')}${S.showUsd ? t('بالدولار', usd(s.total)) : ''}${t('المدفوع', money(s.paid))}${s.due > 0 ? t('المتبقي (دين)', money(s.due), 'g') : ''}${s.change > 0 ? t('الراجع للزبون', money(s.change)) : ''}${s.customerId && s.custBalance > 0 ? t('إجمالي دين الزبون', money(s.custBalance)) : ''}</div></div></div>`;
 }
+function jpegsToPDF(pages, wp, hp) {
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const push = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const obj = (n, body) => { offs[n] = len; push(`${n} 0 obj\n${body}\nendobj\n`); };
+  push('%PDF-1.4\n');
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, `<< /Type /Pages /Kids [${pages.map((_, i) => `${3 + i * 3} 0 R`).join(' ')}] /Count ${pages.length} >>`);
+  pages.forEach((p, i) => {
+    const pg = 3 + i * 3, im = pg + 1, ct = pg + 2;
+    obj(pg, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${wp} ${hp}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>`);
+    offs[im] = len; push(`${im} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.data.length} >>\nstream\n`); push(p.data); push('\nendstream\nendobj\n');
+    const c = `q ${wp} 0 0 ${p.dh.toFixed(2)} 0 ${(hp - p.dh).toFixed(2)} cm /Im0 Do Q`; obj(ct, `<< /Length ${c.length} >>\nstream\n${c}\nendstream`);
+  });
+  const total = 3 + pages.length * 3, xr = len; let x = `xref\n0 ${total}\n0000000000 65535 f \n`;
+  for (let i = 1; i < total; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+  push(x + `trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+  return new Blob(parts, { type: 'application/pdf' });
+}
+async function receiptToPDF(s, htmlOverride) {
+  await ensureLib('h2c');
+  const f = S.paper === 'a5' ? { w: 559, h: 794, wp: 420, hp: 595 } : S.paper === 'a5h' ? { w: 794, h: 559, wp: 595, hp: 420 } : { w: 794, h: 1123, wp: 595, hp: 842 };
+  const cut = '<div class="cutline">✂ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div>';
+  const html = htmlOverride ? htmlOverride : (S.paper === 'a5' || S.paper === 'a5h' || s.items.length > 7) ? invoiceHTML(s, S.paper === 'a5' || S.paper === 'a5h' ? '' : 'نسخة الزبون')
+    : `<div style="height:520px;overflow:hidden">${invoiceHTML(s, 'نسخة الزبون')}</div>${cut}<div style="height:520px;overflow:hidden">${invoiceHTML(s, 'نسخة المحل')}</div>`;
+  const box = document.createElement('div');
+  box.style.cssText = `position:fixed;left:-99999px;top:0;width:${f.w}px;padding:24px;box-sizing:border-box;background:#fff;color:#000;direction:rtl`;
+  box.innerHTML = html; document.body.appendChild(box);
+  let canvas; try { canvas = await html2canvas(box, { scale: 2, backgroundColor: '#ffffff', useCORS: true }); } finally { box.remove(); }
+  const pagePx = f.h * 2, pages = [];
+  for (let i = 0; i * pagePx < canvas.height; i++) {
+    const hh = Math.min(pagePx, canvas.height - i * pagePx), c = document.createElement('canvas'); c.width = canvas.width; c.height = hh;
+    const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, hh); cx.drawImage(canvas, 0, i * pagePx, canvas.width, hh, 0, 0, canvas.width, hh);
+    const b = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+    pages.push({ data: new Uint8Array(await b.arrayBuffer()), w: c.width, h: hh, dh: f.hp * hh / pagePx });
+  }
+  return jpegsToPDF(pages, f.wp, f.hp);
+}
+async function sharePDF(s, html) {
+  toast('جارٍ تجهيز الملف...', 'dark', 1500);
+  const blob = await receiptToPDF(s, html), name = `${S.shopName || 'فاتورة'}-${s.no}.pdf`, file = new File([blob], name, { type: 'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  download(blob, name); toast('تم حفظ الملف في مجلد التنزيلات', 'success');
+}
+function docHTML(s, o) {
+  const rows = s.items.map((l, i) => `<tr><td class="n">${fmtNum(i + 1)}</td><td>${esc(l.name)}</td><td class="n">${fmtNum(l.qty)}${l.unit && l.unit !== 'قطعة' ? ' ' + esc(l.unit) : ''}</td>${o.prices ? `<td class="n">${fmtNum(l.price)}</td><td class="n">${fmtNum(l.qty * l.price)}</td>` : ''}</tr>`).join('');
+  const t = (a, b, cls = '') => `<div class="${cls}"><span>${a}</span><span class="num">${b}</span></div>`;
+  return `<div class="inv"><div class="inv-h"><div class="inv-shop">${S.shopLogo ? `<img class="logo" src="${S.shopLogo}" alt="">` : ''}<h2>${esc(S.shopName)}</h2>${[S.shopPhone, S.shopAddress].filter(Boolean).map(esc).join(' · ')}</div><div class="inv-title"><b>${o.title}</b>${s.no ? `<div>رقم: <b class="mono">${esc(s.no)}</b></div>` : ''}<div>التاريخ: <span class="num">${fmtDT(s.ts || Date.now())}</span></div></div></div>
+    <div class="inv-meta">${s.customerName ? `<div>الزبون: <b>${esc(s.customerName)}</b></div>` : '<div>السيد: ......................</div>'}</div>
+    <table class="inv-t"><thead><tr><th>#</th><th>المادة</th><th>الكمية</th>${o.prices ? '<th>السعر</th><th>المبلغ</th>' : ''}</tr></thead><tbody>${rows}</tbody></table>
+    ${o.prices ? `<div class="inv-words">فقط ${numToArabicWords(s.total)} دينار عراقي لا غير</div>` : ''}
+    <div class="inv-f"><div class="inv-note">${o.note ? `<div>${esc(o.note)}</div>` : ''}<div class="sign"><span>${o.sign1 || 'المستلم'}: ..............</span><span>${o.sign2 || 'المحاسب'}: ..............</span></div></div>
+      ${o.prices ? `<div class="inv-tot">${t('المجموع', money(s.subtotal))}${s.discount > 0 ? t('الخصم', '- ' + money(s.discount)) : ''}${s.tax > 0 ? t('الضريبة', money(s.tax)) : ''}${t('الإجمالي', money(s.total), 'g')}</div>` : ''}</div></div>`;
+}
+function showDoc(title, html, s, extra = '') {
+  const m = openModal({ title: `<i class="bi bi-file-earmark-text"></i> ${title}`, size: 'lg', body: html, footer: `<button class="btn btn-accent" data-p><i class="bi bi-printer"></i> طباعة</button><button class="btn btn-soft" data-pdf><i class="bi bi-filetype-pdf"></i> PDF</button>${extra}<button class="btn btn-light" data-mx-close>إغلاق</button>` });
+  $('[data-p]', m.el).onclick = () => printHTML(html);
+  $('[data-pdf]', m.el).onclick = () => sharePDF(Object.assign({ no: title }, s), html).catch(fail);
+  return m;
+}
+A['cart-quote'] = () => {
+  const c = State.cart; if (!c.items.length) return toast('السلة فارغة', 'warning');
+  const t = cartCalc(), s = { ts: Date.now(), items: c.items.map(l => ({ name: l.name, qty: l.qty, price: l.price, unit: l.unit })), subtotal: t.sub, tax: t.tax, total: t.total, discount: Math.max(0, round2(t.sub + t.tax - t.total)) };
+  showDoc('عرض سعر', docHTML(s, { title: 'عرض سعر', prices: true, note: 'هذا العرض صالح لمدة 7 أيام من تاريخه.', sign1: 'الزبون', sign2: 'المحاسب' }), s);
+};
+A['low-list'] = () => {
+  const low = State.products.filter(p => stockState(p) !== 'ok').sort((a, b) => (a.category || '').localeCompare(b.category || '', 'ar') || a.qty - b.qty);
+  if (!low.length) return toast('لا توجد نواقص ✓', 'success');
+  const need = p => Math.max(1, Math.ceil((p.alertQty ?? S.lowStockDefault) * 2 - p.qty));
+  const html = `<div class="inv"><div class="inv-h"><div class="inv-shop"><h2>${esc(S.shopName)}</h2></div><div class="inv-title"><b>قائمة النواقص</b><div>التاريخ: <span class="num">${fmtDT(Date.now())}</span></div></div></div><table class="inv-t"><thead><tr><th>#</th><th>المادة</th><th>الموجود</th><th>المطلوب</th></tr></thead><tbody>${low.map((p, i) => `<tr><td class="n">${fmtNum(i + 1)}</td><td>${esc(p.name)}</td><td class="n">${fmtNum(p.qty)}</td><td class="n">${fmtNum(need(p))}</td></tr>`).join('')}</tbody></table></div>`;
+  const text = `*قائمة النواقص — ${S.shopName}*\n` + low.map(p => `• ${p.name}: الموجود ${fmtNum(p.qty)} — المطلوب ${fmtNum(need(p))}`).join('\n');
+  const m = showDoc(`قائمة النواقص (${fmtNum(low.length)})`, html, { no: 'نواقص' }, '<button class="btn btn-success" data-wa><i class="bi bi-whatsapp"></i> واتساب</button>');
+  $('[data-wa]', m.el).onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+};
+A['test-print'] = () => {
+  const items = [['سلكوان أبيض توب اكس', 2, 2500], ['براغي خشب 4 ملم', 10, 250], ['فيشر بلاستيك', 5, 500], ['صبغ جدران أبيض 4 لتر', 1, 18000]].map(([name, qty, price]) => ({ pid: 0, name, qty, price, cost: price * 0.8, factor: 1, unit: 'قطعة' }));
+  const subtotal = items.reduce((a, l) => a + l.qty * l.price, 0);
+  showReceipt({ id: 0, no: 'INV-TEST', ts: Date.now(), items, subtotal, discount: 0, tax: 0, total: subtotal, paid: subtotal, due: 0, change: 0, method: 'cash', userName: (State.user && State.user.name) || '', customerName: 'زبون تجريبي', returnedTotal: 0, status: 'done' });
+};
+A['backup-share'] = async () => {
+  const data = {}; for (const t of db.tables) data[t.name] = await t.toArray();
+  const blob = new Blob([JSON.stringify({ app: 'pos-pwa', version: 1, exportedAt: Date.now(), data })], { type: 'text/plain' }), name = `backup-${S.shopName}-${dateStamp()}.json.txt`, file = new File([blob], name, { type: 'text/plain' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); await setSetting('lastBackup', Date.now()); audit('مشاركة نسخة احتياطية'); updateBell(); refreshView(); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  return exportBackup().then(() => refreshView());
+};
+A['price-audit'] = async () => {
+  const P = State.products, bad = P.filter(p => p.retailPrice > 0 && (!p.buyPrice || p.buyPrice >= p.retailPrice)).map(p => ({ p, why: !p.buyPrice ? 'سعر الشراء صفر' : 'الشراء أعلى من البيع أو يساويه' }));
+  const low = P.filter(p => p.buyPrice > 0 && p.retailPrice > p.buyPrice && (p.retailPrice - p.buyPrice) / p.retailPrice < 0.05).map(p => ({ p, why: 'هامش أقل من 5%' }));
+  const sales = (await db.sales.where('ts').aboveOrEqual(Date.now() - 30 * DAY).toArray()).filter(s => s.status !== 'void'), loss = [];
+  sales.forEach(s => s.items.forEach(l => { if (l.price < l.cost) loss.push({ no: s.no, name: l.name, amt: l.qty * (l.cost - l.price) }); }));
+  loss.sort((a, b) => b.amt - a.amt);
+  const row = x => `<div class="rowx" data-act="p-edit" data-id="${x.p.id}"><div class="grow"><div class="t">${esc(x.p.name)}</div><div class="s">${x.why} · شراء ${money(x.p.buyPrice || 0)} · بيع ${money(x.p.retailPrice)}</div></div><i class="bi bi-pencil text-muted"></i></div>`;
+  const sec = (t, n, inner) => `<h6 class="sec-title mt-3">${t} <span class="chip ${n ? 'bad' : 'ok'}">${fmtNum(n)}</span></h6>${n ? inner : '<div class="small text-muted">لا توجد مشاكل ✓</div>'}`;
+  openModal({ title: '<i class="bi bi-clipboard-check"></i> تدقيق الأسعار والهامش', size: 'lg',
+    body: sec('أسعار شراء خاطئة', bad.length, bad.slice(0, 60).map(row).join('')) + sec('هامش منخفض', low.length, low.slice(0, 40).map(row).join('')) +
+      sec('بيع بأقل من الكلفة (آخر 30 يوماً)', loss.length, loss.slice(0, 30).map(x => `<div class="rowx"><div class="grow"><div class="t">${esc(x.name)}</div><div class="s mono">${esc(x.no)}</div></div><b class="num text-danger">- ${money(x.amt)}</b></div>`).join('')),
+    footer: '<button class="btn btn-light" data-mx-close>إغلاق</button>' });
+};
 function printSale(s) {
   if (S.paper === 'a4h') {
     if (s.items.length > 7) { toast('الفاتورة طويلة، طُبعت نسخة واحدة على ورقة A4', 'warning', 3500); return printHTML(invoiceHTML(s, 'نسخة الزبون'), { paper: 'a4' }); }
@@ -1728,13 +1871,15 @@ function showReceipt(s, { fresh = false } = {}) {
   const m = openModal({
     title: `<i class="bi bi-receipt"></i> ${fresh ? 'تمت العملية ✓' : 'فاتورة ' + esc(s.no)}`,
     body: isA5() ? invoiceHTML(s) : receiptHTML(s),
-    footer: `<button class="btn btn-accent" data-p><i class="bi bi-printer"></i> طباعة</button><button class="btn btn-success" data-w><i class="bi bi-whatsapp"></i> واتساب</button>
+    footer: `<button class="btn btn-accent" data-p><i class="bi bi-printer"></i> طباعة</button><button class="btn btn-soft" data-pdf><i class="bi bi-filetype-pdf"></i> PDF</button>${!fresh && s.status !== 'void' ? '<button class="btn btn-soft" data-dn><i class="bi bi-truck"></i> وصل تسليم</button>' : ''}<button class="btn btn-success" data-w><i class="bi bi-whatsapp"></i> واتساب</button>
       ${!fresh && s.status !== 'void' && can('void') ? '<button class="btn btn-outline-danger" data-v><i class="bi bi-x-octagon"></i> إلغاء الفاتورة</button>' : ''}
       ${!fresh && s.status !== 'void' && can('returns') ? '<button class="btn btn-soft" data-r><i class="bi bi-arrow-return-left"></i> مرتجع</button>' : ''}
       <button class="btn btn-light" data-mx-close>${fresh ? 'فاتورة جديدة' : 'إغلاق'}</button>`
   });
   renderBarcodes(m.el);
   $('[data-p]', m.el).onclick = () => printSale(s);
+  $('[data-pdf]', m.el).onclick = () => sharePDF(s).catch(fail);
+  $('[data-dn]', m.el)?.addEventListener('click', () => showDoc('وصل تسليم', docHTML(s, { title: 'وصل تسليم', prices: false, note: 'استلمتُ البضاعة المذكورة أعلاه سليمة وبحالة جيدة.' }), s));
   $('[data-w]', m.el).onclick = async () => {
     let ph = s.customerPhone;
     if (!ph) { ph = await askInput({ title: 'إرسال عبر واتساب', label: 'رقم هاتف الزبون', inputmode: 'tel', ok: 'إرسال' }); if (!ph) return; }
@@ -1799,9 +1944,10 @@ function normInvNo(q) {
   return m ? 'INV-' + pad(+m[1]) : s;
 }
 async function viewReturns(el, params) {
+  RD.range = 'today'; RD.q = '';
   el.innerHTML = `<div class="stage"><h5 class="mb-3">المرتجعات</h5>
-    <div class="cardx mb-3"><label class="form-label">ابحث عن الفاتورة</label>
-      <div class="sbar"><i class="bi bi-receipt"></i><input id="r-q" placeholder="رقم الفاتورة أو اسم المنتج أو الزبون" autocomplete="off"><button id="r-cam" type="button" aria-label="مسح"><i class="bi bi-camera-fill"></i></button><button id="r-go" type="button"><i class="bi bi-search"></i></button></div>
+    <div class="cardx mb-3"><label class="form-label">ابحث باسم المادة أو رقم الفاتورة أو الزبون</label>
+      <div class="sbar"><i class="bi bi-receipt"></i><input id="r-q" placeholder="مثال: سلكوان أو INV-0123 أو اسم الزبون" autocomplete="off"><button id="r-cam" type="button" aria-label="مسح"><i class="bi bi-camera-fill"></i></button><button id="r-go" type="button"><i class="bi bi-search"></i></button></div>
       <div id="r-recent" class="mt-3"></div></div>
     <div id="r-sale"></div>
     <div class="cardx mt-3"><h6 class="sec-title"><i class="bi bi-clock-history"></i> سجل المرتجعات</h6><div id="r-hist"></div></div></div>`;
@@ -1815,7 +1961,7 @@ async function viewReturns(el, params) {
   $('#r-hist').innerHTML = rets.length ? rets.map(r => `<div class="rowx"><div class="grow"><div class="t">${esc(r.no)} <span class="chip mut">${esc(r.saleNo)}</span></div><div class="s">${fmtDT(r.ts)}${r.customerName ? ' · ' + esc(r.customerName) : ''} · ${r.method === 'debt' ? 'خصم من الدين' : 'نقداً'}</div></div><b class="num text-danger">${money(r.total)}</b></div>`).join('') : empty('bi-arrow-return-left', 'لا توجد مرتجعات بعد');
   if (params && params[0]) go_(params[0]);
 }
-A['r-load'] = async el => { const s = await db.sales.where('no').equals(el.dataset.no).first(); if (s) { loadSaleForReturn(s); $('#r-sale').scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
+A['r-load'] = async el => { const s = await db.sales.where('no').equals(el.dataset.no).first(); if (!s) return; loadSaleForReturn(s); if (el.dataset.li != null) { const i = $(`.r-qty[data-i="${el.dataset.li}"]`); if (i) { i.value = Math.min(1, +i.dataset.max); i.dispatchEvent(new Event('input', { bubbles: true })); } } };
 function loadSaleForReturn(s) {
   RV.sale = s;
   const box = $('#r-sale');
@@ -1843,22 +1989,21 @@ function loadSaleForReturn(s) {
   box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 A['r-inc'] = () => { }; A['r-dec'] = () => { };
-const RD = { q: '', days: 14, t: 0 };
+const RD = { q: '', range: 'today', t: 0 };
 const dayStart = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const dayLabel = ts => { const d0 = dayStart(Date.now()), d = dayStart(ts); if (d === d0) return 'اليوم'; if (d === d0 - DAY) return 'أمس'; return new Date(ts).toLocaleDateString('ar-IQ-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' }); };
 const fmtHM = ts => new Date(ts).toLocaleTimeString('ar-IQ-u-nu-latn', { hour: '2-digit', minute: '2-digit' });
 async function drawReturnDays() {
   const box = $('#r-recent'); if (!box) return;
-  const from = dayStart(Date.now()) - (RD.days - 1) * DAY, q = norm(RD.q || '');
-  let all = (await db.sales.where('ts').aboveOrEqual(from).toArray()).filter(s => s.status !== 'void').sort((a, b) => b.ts - a.ts);
-  if (q) all = all.filter(s => norm([s.no, s.customerName || '', ...s.items.map(l => l.name)].join(' ')).includes(q));
-  const more = `<button type="button" class="btn btn-soft w-100 mt-3" data-act="rd-more"><i class="bi bi-clock-history"></i> عرض أيام أقدم</button>`;
-  if (!all.length) { box.innerHTML = empty('bi-receipt', q ? 'لا توجد نتائج — جرّب كلمة أخرى أو اعرض أياماً أقدم' : 'لا توجد فواتير في هذه الفترة') + more; return; }
-  const groups = [];
-  for (const s of all) { const k = dayStart(s.ts); let g = groups[groups.length - 1]; if (!g || g.k !== k) groups.push(g = { k, list: [] }); g.list.push(s); }
-  box.innerHTML = groups.map(g => `<div class="rd-day"><b>${dayLabel(g.k)}</b><span>${fmtNum(g.list.length)} فاتورة · ${money(g.list.reduce((a, s) => a + s.total, 0))}</span></div>` + g.list.slice(0, 60).map(s => { const names = s.items.slice(0, 2).map(l => l.name).join('، ') + (s.items.length > 2 ? ` +${fmtNum(s.items.length - 2)}` : ''); return `<div class="rowx rd-row" data-act="r-load" data-no="${esc(s.no)}"><div class="grow"><div class="t"><span class="mono">${esc(s.no)}</span> <span class="small text-muted">${fmtHM(s.ts)}</span>${s.returnedTotal > 0 ? ' <span class="chip warn">مرتجع جزئي</span>' : ''}</div><div class="s">${esc(names)}${s.customerName ? ' · ' + esc(s.customerName) : ''}</div></div><b class="num">${money(s.total)}</b><i class="bi bi-chevron-left text-muted"></i></div>`; }).join('')).join('') + more;
+  const sod = dayStart(Date.now()), R = { today: [sod, Infinity], yest: [sod - DAY, sod], '7': [sod - 6 * DAY, Infinity], '30': [sod - 29 * DAY, Infinity] }, [from, to] = R[RD.range] || R.today, q = norm(RD.q || '');
+  const sales = (await db.sales.where('ts').aboveOrEqual(from).toArray()).filter(s => s.status !== 'void' && s.ts < to).sort((a, b) => b.ts - a.ts), rows = [];
+  for (const s of sales) s.items.forEach((l, i) => { if (q && !norm(`${s.no} ${s.customerName || ''} ${l.name}`).includes(q)) return; rows.push({ s, l, i, left: round2(l.qty - (l.returnedQty || 0)) }); });
+  const head = `<div class="tabs mb-2">${[['today', 'اليوم'], ['yest', 'أمس'], ['7', '7 أيام'], ['30', '30 يوماً']].map(([k, t]) => `<button type="button" data-act="rd-range" data-v="${k}" class="${RD.range === k ? 'on' : ''}">${t}</button>`).join('')}</div>`;
+  if (!rows.length) { box.innerHTML = head + empty('bi-receipt', q ? 'لا توجد نتائج لهذه الكلمة في هذه الفترة — جرّب فترة أطول' : 'لا توجد مبيعات في هذه الفترة'); return; }
+  box.innerHTML = head + `<div class="small text-muted mb-1">${fmtNum(rows.length)} مادة${rows.length > 80 ? ' (أول 80)' : ''} · اضغط على السطر للإرجاع</div><div class="tbl-wrap"><table class="tbl rd-t"><thead><tr><th>المادة</th><th>الكمية</th><th>المبلغ</th><th>الفاتورة</th></tr></thead><tbody>` +
+    rows.slice(0, 80).map(x => `<tr data-act="r-load" data-no="${esc(x.s.no)}" data-li="${x.i}" class="${x.left <= 0 ? 'rd-done' : ''}"><td>${esc(x.l.name)}${x.s.customerName ? `<div class="small text-muted">${esc(x.s.customerName)}</div>` : ''}</td><td class="num">${fmtNum(x.l.qty)}${x.l.returnedQty ? `<div class="small text-muted">راجع ${fmtNum(x.l.returnedQty)}</div>` : ''}</td><td class="num">${fmtNum(x.l.qty * x.l.price)}</td><td class="mono small">${esc(x.s.no)}<div class="text-muted">${RD.range === 'today' || RD.range === 'yest' ? fmtHM(x.s.ts) : fmtDate(x.s.ts)}</div></td></tr>`).join('') + '</tbody></table></div>';
 }
-A['rd-more'] = () => { RD.days += 14; drawReturnDays(); };
+A['rd-range'] = el => { RD.range = el.dataset.v; drawReturnDays(); };
 async function doReturn(s, ratio) {
   const picks = [];
   $$('.r-qty').forEach(i => { const q = Math.min(toNum(i.value), +i.dataset.max); if (q > 0) picks.push({ i: +i.dataset.i, q: round2(q) }); });
@@ -2545,7 +2690,7 @@ async function viewSettings(el) {
       <div class="col-12"><label class="form-label">احتساب سعر الشراء عند وصول دفعة جديدة</label><select class="form-select" id="st-cost"><option value="avg" ${S.costMethod === 'avg' ? 'selected' : ''}>المتوسط المرجّح (أدق للأرباح)</option><option value="last" ${S.costMethod === 'last' ? 'selected' : ''}>آخر سعر شراء</option></select></div>
       <div class="col-12">${sw('st-neg', 'السماح بالبيع حتى لو المخزون صفر (كمية سالبة)', S.allowNegative)}</div></div></div>
     <div class="cardx mb-3"><h6 class="sec-title"><i class="bi bi-palette"></i> المظهر والأمان</h6><div class="row g-2">
-      <div class="col-6"><label class="form-label">السمة</label><select class="form-select" id="st-theme"><option value="auto" ${S.theme === 'auto' ? 'selected' : ''}>تلقائي</option><option value="light" ${S.theme === 'light' ? 'selected' : ''}>فاتح</option><option value="dark" ${S.theme === 'dark' ? 'selected' : ''}>داكن</option></select></div>
+      <div class="col-6"><label class="form-label">السمة</label><select class="form-select" id="st-theme"><option value="dark" ${S.theme !== 'light' ? 'selected' : ''}>داكن</option><option value="light" ${S.theme === 'light' ? 'selected' : ''}>فاتح</option></select></div>
       <div class="col-6"><label class="form-label">حجم الخط</label><select class="form-select" id="st-fs">${[90, 100, 110, 125].map(n => `<option value="${n}" ${S.fontScale === n ? 'selected' : ''}>${n}%</option>`).join('')}</select></div>
       ${fi('st-bk', 'تذكير النسخ الاحتياطي (أيام)', S.backupDays, 'inputmode="numeric"')}
       <div class="col-12">${sw('st-ar', 'عرض الأرقام بالعربية (٠١٢٣)', S.arabicDigits)}${sw('st-snd', 'صوت عند إضافة منتج', S.sound)}${sw('st-lock', 'قفل التطبيق برمز PIN', S.lockEnabled)}</div></div>
@@ -2554,7 +2699,7 @@ async function viewSettings(el) {
       <div class="d-flex gap-2 mb-2"><input class="form-control" id="cat-n" placeholder="تصنيف جديد"><button class="btn btn-accent" data-act="cat-add"><i class="bi bi-plus-lg"></i></button></div>
       <div class="d-flex flex-wrap gap-2">${State.categories.map(c => `<span class="chip" style="padding:6px 6px 6px 12px">${esc(c)} <button class="icb danger" style="width:22px;height:22px;border-radius:50%" data-act="cat-del" data-v="${esc(c)}"><i class="bi bi-x"></i></button></span>`).join('') || '<span class="text-muted small">لا توجد تصنيفات</span>'}</div></div>
     <div class="cardx mb-3"><h6 class="sec-title"><i class="bi bi-hdd"></i> البيانات</h6>
-      <div class="row g-2"><div class="col-6"><button class="btn btn-soft w-100" data-act="backup-now"><i class="bi bi-download"></i> نسخة احتياطية</button></div><div class="col-6"><button class="btn btn-soft w-100" data-act="backup-restore"><i class="bi bi-upload"></i> استعادة نسخة</button></div>
+      <div class="row g-2"><div class="col-6"><button class="btn btn-soft w-100" data-act="backup-now"><i class="bi bi-download"></i> نسخة احتياطية</button></div><div class="col-6"><button class="btn btn-soft w-100" data-act="backup-restore"><i class="bi bi-upload"></i> استعادة نسخة</button></div><div class="col-6"><button class="btn btn-soft w-100" data-act="backup-share"><i class="bi bi-share"></i> مشاركة النسخة</button></div><div class="col-6"><button class="btn btn-soft w-100" data-act="test-print"><i class="bi bi-printer"></i> وصل تجريبي</button></div><div class="col-12"><button class="btn btn-soft w-100" data-act="price-audit"><i class="bi bi-clipboard-check"></i> تدقيق الأسعار والهامش</button></div><div class="col-12"><button class="btn btn-accent w-100" data-act="sync-open"><i class="bi bi-cloud-check"></i> المزامنة السحابية (Firebase)</button></div>
       <div class="col-12"><button class="btn btn-outline-danger w-100" data-act="reset-sys"><i class="bi bi-exclamation-octagon"></i> إعادة ضبط النظام (حذف كل البيانات)</button></div></div>
       <div class="small text-muted mt-3">آخر نسخة: ${S.lastBackup ? fmtDT(S.lastBackup) : 'لا يوجد'}<br>التخزين الدائم: ${persisted ? '<span class="text-success">مفعّل ✓</span>' : '<a href="#" data-act="persist">اطلب تفعيله</a> (يمنع المتصفح من حذف البيانات)'}</div></div>
     <div class="cardx"><h6 class="sec-title"><i class="bi bi-phone"></i> التطبيق</h6>
@@ -2587,7 +2732,7 @@ A['cat-del'] = async el => {
   const row = await db.categories.where('name').equals(n).first(); if (row) await db.categories.delete(row.id);
   await loadCategories(); viewSettings($('#view'));
 };
-A['backup-restore'] = () => pickFile('.json,application/json', importBackup);
+A['backup-restore'] = () => pickFile('.json,.txt,application/json,text/plain', importBackup);
 A['reset-sys'] = () => resetSystem();
 A['persist'] = async () => { const ok = navigator.storage?.persist ? await navigator.storage.persist() : false; toast(ok ? 'تم تفعيل التخزين الدائم' : 'المتصفح رفض الطلب (يحدث غالباً بعد تثبيت التطبيق)', ok ? 'success' : 'warning', 3500); viewSettings($('#view')); };
 A['install'] = async () => { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; viewSettings($('#view')); };
@@ -2657,7 +2802,7 @@ function go(id, arg) {
   if (location.hash === h) render(); else location.hash = h;
 }
 function applyTheme() {
-  const dark = S.theme === 'dark' || (S.theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const dark = S.theme !== 'light';
   document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
   document.documentElement.style.setProperty('--fs', (S.fontScale || 100) / 100);
 }
@@ -2699,7 +2844,7 @@ function viewMore(el) {
       ${T('go-count', '', 'bi-clipboard-check', 'الجرد الفعلي', '#0a7ea4', '#3fb6dd', 'adjust_stock')}${T('go', 'shift', 'bi-safe-fill', 'الصندوق والوردية', '#5b4bd6', '#8f84f2', 'shift')}
       ${T('go', 'expenses', 'bi-wallet2', 'المصاريف', '#b4531f', '#e8925c', 'expenses_add')}${T('go', 'users', 'bi-person-gear', 'المستخدمون', '#2347c5', '#5b7cf0', 'users')}
       ${T('go', 'audit', 'bi-journal-text', 'سجل النشاط', '#6d3fc9', '#a47cf0', 'audit')}${T('go', 'settings', 'bi-gear-fill', 'الإعدادات', '#3d5a63', '#7f9da6', 'settings')}
-      ${T('backup-now', '', 'bi-cloud-arrow-down-fill', 'نسخة احتياطية', '#0e8f6a', '#35c79a', 'settings')}${T('lock', '', 'bi-lock-fill', 'قفل التطبيق', '#d6264b', '#f0668f')}</div></div>`;
+      ${T('backup-now', '', 'bi-cloud-arrow-down-fill', 'نسخة احتياطية', '#0e8f6a', '#35c79a', 'settings')}${T('low-list', '', 'bi-cart-plus', 'قائمة النواقص', '#0b8a86', '#3cc7c2', 'inventory_view')}${T('price-audit', '', 'bi-clipboard-check', 'تدقيق الأسعار', '#c2370f', '#f08a5d', 'products_edit')}${T('sync-open', '', 'bi-cloud-check-fill', 'المزامنة السحابية', '#0a7ea4', '#3fb6dd', 'settings')}${T('lock', '', 'bi-lock-fill', 'قفل التطبيق', '#d6264b', '#f0668f')}</div></div>`;
 }
 A['go-count'] = () => { IV.tab = 'count'; go('inventory'); };
 A['lock'] = async () => {
@@ -2766,6 +2911,7 @@ async function boot() {
     State.cart = loadCart() || newCart();
     if (!location.hash) location.hash = '#/dashboard';
     renderChrome(); await render();
+    syInit();
     registerSW();
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { });
     $('#splash')?.remove();
@@ -2774,6 +2920,165 @@ async function boot() {
     $('#view').innerHTML = `<div class="empty" style="padding:60px 10px"><i class="bi bi-exclamation-octagon"></i><b>تعذّر فتح قاعدة البيانات</b><div class="small mt-2">${esc(e.message || '')}<br>تأكد أنك لا تستخدم التصفح الخفي، وأن مساحة التخزين متاحة.</div></div>`;
   }
 }
+
+/* ===================== المزامنة السحابية (Firebase عبر REST) =====================
+   نموذج آمن: جهاز «رئيسي» يبيع ويرفع لقطة كاملة مضغوطة، وأجهزة «عرض فقط» تنزّلها.
+   لا تعارضات ولا دمج مخزون: كاتب واحد فقط. تُحفظ آخر 7 أيام من اللقطات للرجوع إليها. */
+const SYC = { key: 'AIzaSyCSrWx7FW5RI4JjEilv8Te1UUQZGAQgv98', pid: 'hade-sadq' };
+const SYB = `https://firestore.googleapis.com/v1/projects/${SYC.pid}/databases/(default)/documents`, SYN = `projects/${SYC.pid}/databases/(default)/documents`;
+const SY = { cfg: (() => { try { return JSON.parse(localStorage.getItem('pos-sync')) || {}; } catch { return {}; } })(), tok: '', exp: 0, busy: false, polling: false, dirty: false, t: 0, applying: false, status: '' };
+const SY_VIEW_OK = new Set(['view_dashboard', 'reports', 'products_view', 'inventory_view', 'customers', 'audit', 'settings', 'see_cost']);
+const syPersist = () => { try { localStorage.setItem('pos-sync', JSON.stringify(SY.cfg)); } catch { } };
+function syErr(j, st) {
+  const m = (j && j.error && (j.error.message || j.error.status)) || '';
+  const map = { INVALID_LOGIN_CREDENTIALS: 'البريد أو كلمة السر غير صحيحة', EMAIL_NOT_FOUND: 'هذا البريد غير مسجّل في Authentication', INVALID_PASSWORD: 'كلمة السر غير صحيحة', OPERATION_NOT_ALLOWED: 'فعّل Email/Password من Authentication ← Sign-in method', TOO_MANY_ATTEMPTS_TRY_LATER: 'محاولات كثيرة، انتظر قليلاً ثم أعد المحاولة', INVALID_EMAIL: 'صيغة البريد غير صحيحة', USER_DISABLED: 'هذا الحساب معطّل' };
+  for (const k in map) if (m.includes(k)) return map[k];
+  if (/does not exist/i.test(m)) return 'قاعدة Firestore غير منشأة بعد: أنشئها من Databases & Storage ← Firestore';
+  if (st === 403 || /PERMISSION_DENIED/.test(m)) return 'مرفوض من Firestore: راجع القواعد (Rules) وانشرها، وتأكد من تسجيل الدخول';
+  return m || ('خطأ ' + (st || ''));
+}
+async function syAuth(email, pass) {
+  let r, j; try { r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${SYC.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass, returnSecureToken: true }) }); j = await r.json(); } catch { throw new Error('تعذّر الاتصال بالإنترنت'); }
+  if (!r.ok) throw new Error(syErr(j, r.status));
+  SY.tok = j.idToken; SY.exp = Date.now() + (+j.expiresIn - 60) * 1000; SY.cfg.refresh = j.refreshToken; SY.cfg.email = email; syPersist();
+}
+async function syToken() {
+  if (SY.tok && Date.now() < SY.exp) return SY.tok;
+  if (!SY.cfg.refresh) throw new Error('سجّل الدخول أولاً');
+  let r, j; try { r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${SYC.key}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(SY.cfg.refresh) }); j = await r.json(); } catch { throw new Error('تعذّر الاتصال بالإنترنت'); }
+  if (!r.ok) { SY.cfg.refresh = ''; syPersist(); throw new Error('انتهت الجلسة، سجّل الدخول مرة أخرى'); }
+  SY.tok = j.id_token; SY.exp = Date.now() + (+j.expires_in - 60) * 1000; SY.cfg.refresh = j.refresh_token; syPersist(); return SY.tok;
+}
+async function syFS(path, opt = {}) {
+  const t = await syToken(); let r, j;
+  try { r = await fetch(SYB + path, { cache: 'no-store', ...opt, headers: { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' } }); j = await r.json().catch(() => ({})); } catch { throw new Error('تعذّر الاتصال بالإنترنت'); }
+  if (!r.ok) { const e = new Error(syErr(j, r.status)); e.status = r.status; throw e; }
+  return j;
+}
+const b64 = buf => { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = t => { const s = atob(t), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; };
+const gz = async str => new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+const gunz = async buf => new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+async function syMeta(id) {
+  try {
+    const f = (await syFS(`/cloud/${id}`)).fields || {};
+    let stats = {}; try { stats = JSON.parse(f.stats?.stringValue || '{}'); } catch { }
+    return { u: +(f.u?.integerValue || 0), n: +(f.n?.integerValue || 1), z: +(f.z?.integerValue || 0), dev: f.dev?.stringValue || '', did: f.did?.stringValue || '', stats };
+  } catch (e) { if (e.status === 404) return null; throw e; }
+}
+async function syBuild() {
+  const data = {}; for (const t of db.tables) data[t.name] = await t.toArray();
+  delete data.held;
+  if (data.purchases) data.purchases = data.purchases.map(p => p.images && p.images.length ? { ...p, images: [], imgCount: p.images.length } : p);
+  return data;
+}
+async function syUpload(manual) {
+  if (SY.busy) return false; SY.busy = true;
+  try {
+    const prev = await syMeta('snap_main');
+    if (prev && prev.u > (SY.cfg.lastU || 0) && (prev.did ? prev.did !== SY.cfg.did : prev.dev !== SY.cfg.dev)) {
+      if (!manual) { SY.status = 'conflict'; throw new Error('السحابة فيها نسخة أحدث من جهاز آخر'); }
+      if (!await confirmBox(`السحابة فيها نسخة أحدث (من «${esc(prev.dev || 'جهاز آخر')}» · ${fmtDT(prev.u)}). رفع بيانات هذا الجهاز سيستبدلها. متابعة؟`, { danger: true, ok: 'ارفع واستبدل' })) return false;
+    }
+    const data = await syBuild();
+    if (prev && (prev.stats.products || 0) > 20 && data.products.length < prev.stats.products * 0.5) {
+      if (!manual) { SY.status = 'conflict'; throw new Error('بيانات هذا الجهاز أقل بكثير من السحابة'); }
+      if (!await confirmBox(`هذا الجهاز فيه <b>${fmtNum(data.products.length)}</b> منتج فقط بينما السحابة فيها <b>${fmtNum(prev.stats.products)}</b>. هل أنت متأكد أنه الجهاز الصحيح؟`, { danger: true, ok: 'ارفع رغم ذلك' })) return false;
+    }
+    const json = JSON.stringify({ app: 'pos-pwa', v: 1, exportedAt: Date.now(), data }); let z = 0, chunks;
+    if (typeof CompressionStream !== 'undefined') { chunks = b64(await gz(json)).match(/[\s\S]{1,600000}/g); z = 1; } else chunks = json.match(/[\s\S]{1,500000}/g);
+    const u = Date.now(), stats = JSON.stringify({ products: data.products.length, sales: data.sales.length, customers: data.customers.length }), day = new Date().toISOString().slice(0, 10).replace(/-/g, ''), writes = [];
+    const put = id => { writes.push({ update: { name: `${SYN}/cloud/${id}`, fields: { u: { integerValue: String(u) }, n: { integerValue: String(chunks.length) }, z: { integerValue: String(z) }, dev: { stringValue: SY.cfg.dev || '' }, did: { stringValue: SY.cfg.did || '' }, stats: { stringValue: stats } } } }); chunks.forEach((c, i) => writes.push({ update: { name: `${SYN}/cloud/${id}_c${i}`, fields: { d: { stringValue: c } } } })); };
+    put('snap_main'); put('snap_h' + day);
+    const list = await syFS('/cloud?pageSize=300&mask.fieldPaths=u'), cut = Date.now() - 8 * 86400000;
+    for (const d of (list.documents || [])) { const m = d.name.split('/').pop().match(/^snap_h(\d{4})(\d{2})(\d{2})(?:_c\d+)?$/); if (m && Date.UTC(+m[1], +m[2] - 1, +m[3]) < cut) writes.push({ delete: d.name }); }
+    if (prev) for (let i = chunks.length; i < prev.n; i++) writes.push({ delete: `${SYN}/cloud/snap_main_c${i}` });
+    await syFS(':commit', { method: 'POST', body: JSON.stringify({ writes }) });
+    SY.cfg.lastU = u; SY.dirty = false; SY.status = ''; try { localStorage.removeItem('pos-sync-dirty'); } catch { } syPersist();
+    return true;
+  } finally { SY.busy = false; }
+}
+async function syPull(id, { full = false } = {}) {
+  const m = await syMeta(id); if (!m) throw new Error('لا توجد نسخة في السحابة بعد');
+  let s = ''; for (let i = 0; i < m.n; i++) s += (await syFS(`/cloud/${id}_c${i}`)).fields.d.stringValue;
+  const o = JSON.parse(m.z ? await gunz(unb64(s)) : s);
+  if (!o || o.app !== 'pos-pwa' || !o.data || !Array.isArray(o.data.products)) throw new Error('النسخة السحابية تالفة');
+  const skip = new Set(full ? ['held'] : ['held', 'users', 'settings']);
+  SY.applying = true;
+  try { await db.transaction('rw', db.tables, async () => { for (const k of Object.keys(o.data)) { if (skip.has(k) || !db[k] || !Array.isArray(o.data[k])) continue; await db[k].clear(); if (o.data[k].length) await db[k].bulkAdd(o.data[k]); } }); } finally { SY.applying = false; }
+  SY.cfg.lastU = m.u; syPersist(); return m;
+}
+async function syHistory() {
+  const l = await syFS('/cloud?pageSize=300&mask.fieldPaths=u&mask.fieldPaths=stats&mask.fieldPaths=dev');
+  return (l.documents || []).map(d => ({ id: d.name.split('/').pop(), f: d.fields || {} })).filter(x => /^snap_h\d{8}$/.test(x.id)).map(x => { let st = {}; try { st = JSON.parse(x.f.stats?.stringValue || '{}'); } catch { } return { id: x.id, u: +(x.f.u?.integerValue || 0), dev: x.f.dev?.stringValue || '', st }; }).sort((a, b) => b.u - a.u);
+}
+async function syAuto() {
+  if (SY.cfg.role !== 'main' || !SY.cfg.refresh || !navigator.onLine) return;
+  try { await syUpload(false); } catch (e) { console.warn('sync', e); if (SY.status !== 'conflict') { clearTimeout(SY.t); SY.t = setTimeout(syAuto, 120000); } }
+}
+function syMark() {
+  if (SY.applying || SY.cfg.role !== 'main' || !SY.cfg.refresh) return;
+  SY.dirty = true; try { localStorage.setItem('pos-sync-dirty', '1'); } catch { }
+  clearTimeout(SY.t); SY.t = setTimeout(syAuto, 30000);
+}
+async function syPoll() {
+  if (SY.cfg.role !== 'viewer' || !SY.cfg.refresh || document.hidden || !navigator.onLine || SY.polling || SY.busy) return;
+  SY.polling = true;
+  try { const m = await syMeta('snap_main'); if (m && m.u > (SY.cfg.lastU || 0)) { await syPull('snap_main'); await loadAll(); refreshView(); toast('تم تحديث البيانات من الجهاز الرئيسي', 'success', 2200); } } catch (e) { console.warn('poll', e); } finally { SY.polling = false; }
+}
+function syInit() {
+  db.tables.forEach(t => { if (t.name !== 'held') ['creating', 'updating', 'deleting'].forEach(ev => t.hook(ev, syMark)); });
+  if (SY.cfg.role === 'viewer') { document.body.classList.add('viewer'); const b = document.createElement('div'); b.className = 'syban'; b.innerHTML = '<i class="bi bi-eye"></i> عرض فقط'; document.body.appendChild(b); }
+  setInterval(syPoll, 120000); setTimeout(syPoll, 4000);
+  window.addEventListener('online', () => { let d = false; try { d = !!localStorage.getItem('pos-sync-dirty'); } catch { } if (d) syMark(); syPoll(); });
+  try { if (localStorage.getItem('pos-sync-dirty')) setTimeout(syMark, 3000); } catch { }
+}
+const syBtn = async (btn, fn) => { btn.disabled = true; try { await fn(); } catch (e) { fail(e); } finally { btn.disabled = false; } };
+A['sync-open'] = async () => {
+  const c = SY.cfg, logged = !!c.refresh;
+  const m = openModal({ title: '<i class="bi bi-cloud-check"></i> المزامنة السحابية', size: 'lg', body: '<div id="sy-b"></div>', footer: '<button class="btn btn-light" data-mx-close>إغلاق</button>' });
+  const box = $('#sy-b', m.el);
+  const reload = () => { ss.del('cart'); toast('تم، جارٍ إعادة التشغيل...', 'success'); setTimeout(() => location.reload(), 800); };
+  if (!logged) {
+    box.innerHTML = `<div class="row g-2"><div class="col-12"><label class="form-label">البريد (مستخدم Firebase Authentication)</label><input id="sy-em" class="form-control" type="email" value="${esc(c.email || '')}" autocomplete="username"></div>
+      <div class="col-12"><label class="form-label">كلمة السر</label><input id="sy-pw" class="form-control" type="password" autocomplete="current-password"></div>
+      <div class="col-6"><label class="form-label">اسم هذا الجهاز</label><input id="sy-dev" class="form-control" value="${esc(c.dev || (innerWidth >= 700 ? 'التاب' : 'الجوال'))}"></div>
+      <div class="col-6"><label class="form-label">دور الجهاز</label><select id="sy-role" class="form-select"><option value="main">رئيسي — يبيع ويرفع بياناته</option><option value="viewer">عرض فقط — يستقبل من الرئيسي</option></select></div>
+      <div class="col-12"><button class="btn btn-accent w-100" id="sy-login"><i class="bi bi-box-arrow-in-right"></i> تسجيل الدخول</button></div></div>
+      <div class="small text-muted mt-2">الجهاز الرئيسي (التاب) هو الوحيد الذي يبيع ويحدّث السحابة. الجوال بوضع «عرض فقط» يستقبل آخر نسخة ويتابع المبيعات والديون، ولا يمكنه البيع.</div>`;
+    $('#sy-login', m.el).onclick = ev => syBtn(ev.currentTarget, async () => {
+      const em = $('#sy-em', m.el).value.trim(), pw = $('#sy-pw', m.el).value; if (!em || !pw) throw new Error('اكتب البريد وكلمة السر');
+      await syAuth(em, pw); if (!SY.cfg.did) SY.cfg.did = Math.random().toString(36).slice(2) + Date.now().toString(36); SY.cfg.dev = $('#sy-dev', m.el).value.trim() || 'جهاز'; SY.cfg.role = $('#sy-role', m.el).value; syPersist();
+      if (SY.cfg.role === 'viewer') {
+        const meta = await syMeta('snap_main');
+        if (meta && await confirmBox(`تنزيل بيانات «${esc(meta.dev || 'الرئيسي')}» (${fmtDT(meta.u)}) واستبدال بيانات هذا الجهاز؟`, { danger: true, ok: 'نزّل واستبدل' })) { await syPull('snap_main', { full: true }); return reload(); }
+      }
+      m.close(); toast('تم تسجيل الدخول', 'success'); setTimeout(() => { if (SY.cfg.role === 'viewer') location.reload(); else A['sync-open'](); }, 300);
+    });
+    return;
+  }
+  const viewer = c.role === 'viewer';
+  box.innerHTML = `<div class="cardx mb-2"><div><b>${esc(c.email || '')}</b> · ${esc(c.dev || '')} · <span class="chip ${viewer ? 'warn' : 'ok'}">${viewer ? 'عرض فقط' : 'رئيسي'}</span></div>
+      <div class="small mt-1" id="sy-cloud">جارٍ قراءة حالة السحابة...</div><div class="small text-muted">آخر مزامنة لهذا الجهاز: ${c.lastU ? fmtDT(c.lastU) : '—'}${SY.status === 'conflict' ? ' · <span class="text-danger">يوجد تعارض، ارفع يدوياً</span>' : ''}</div></div>
+    <div class="d-grid gap-2">${viewer ? '' : '<button class="btn btn-accent" id="sy-up"><i class="bi bi-cloud-arrow-up"></i> رفع الآن</button>'}<button class="btn btn-soft" id="sy-down"><i class="bi bi-cloud-arrow-down"></i> ${viewer ? 'تحديث من الرئيسي الآن' : 'تنزيل من السحابة (استبدال بيانات هذا الجهاز)'}</button>${viewer ? '' : '<button class="btn btn-soft" id="sy-hist"><i class="bi bi-clock-history"></i> النسخ السابقة (آخر 7 أيام)</button>'}
+      <button class="btn btn-soft" id="sy-role2"><i class="bi bi-arrow-left-right"></i> تحويل هذا الجهاز إلى ${viewer ? 'رئيسي' : 'عرض فقط'}</button><button class="btn btn-outline-danger" id="sy-out"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج من السحابة</button></div>
+    <div id="sy-list" class="mt-2"></div><div class="small text-muted mt-2">صور وصولات المشتريات لا تُرفع للسحابة (تبقى على الجهاز الرئيسي).</div>`;
+  syMeta('snap_main').then(mt => { const e = $('#sy-cloud', m.el); if (e) e.innerHTML = mt ? `السحابة: نسخة «${esc(mt.dev || '—')}» · ${fmtDT(mt.u)} · ${fmtNum(mt.stats.products || 0)} منتج · ${fmtNum(mt.stats.sales || 0)} فاتورة` : 'السحابة فارغة، لم يُرفع شي بعد.'; }).catch(e => { const x = $('#sy-cloud', m.el); if (x) x.innerHTML = `<span class="text-danger">${esc(e.message)}</span>`; });
+  const up = $('#sy-up', m.el); if (up) up.onclick = ev => syBtn(ev.currentTarget, async () => { if (await syUpload(true)) { toast('تم الرفع إلى السحابة ✓', 'success'); m.close(); A['sync-open'](); } });
+  $('#sy-down', m.el).onclick = ev => syBtn(ev.currentTarget, async () => {
+    const mt = await syMeta('snap_main'); if (!mt) throw new Error('السحابة فارغة');
+    if (!await confirmBox(`سيتم <b>استبدال بيانات هذا الجهاز</b> بنسخة «${esc(mt.dev || '—')}» (${fmtDT(mt.u)} · ${fmtNum(mt.stats.products || 0)} منتج · ${fmtNum(mt.stats.sales || 0)} فاتورة). متابعة؟`, { danger: true, ok: 'استبدل' })) return;
+    await syPull('snap_main'); reload();
+  });
+  const hs = $('#sy-hist', m.el); if (hs) hs.onclick = ev => syBtn(ev.currentTarget, async () => {
+    const hl = await syHistory(), el = $('#sy-list', m.el);
+    el.innerHTML = hl.length ? hl.map(x => `<div class="rowx" data-hid="${x.id}"><div class="grow"><div class="t">${fmtDT(x.u)}</div><div class="s">${esc(x.dev)} · ${fmtNum(x.st.products || 0)} منتج · ${fmtNum(x.st.sales || 0)} فاتورة</div></div><button class="btn btn-sm btn-soft" data-rest="${x.id}">استرجاع</button></div>`).join('') : '<div class="small text-muted">لا توجد نسخ سابقة بعد.</div>';
+    $$('[data-rest]', el).forEach(b => b.onclick = e2 => syBtn(e2.currentTarget, async () => { if (!await confirmBox('استرجاع هذه النسخة سيستبدل بيانات هذا الجهاز. متابعة؟', { danger: true, ok: 'استرجع' })) return; await syPull(b.dataset.rest); reload(); }));
+  });
+  $('#sy-role2', m.el).onclick = async () => { if (!await confirmBox(viewer ? 'تحويل هذا الجهاز إلى <b>رئيسي</b> (يبيع ويرفع). لا تجعل جهازين رئيسيين في نفس الوقت. متابعة؟' : 'تحويل هذا الجهاز إلى <b>عرض فقط</b>؟ لن تستطيع البيع منه.', { ok: 'تحويل' })) return; SY.cfg.role = viewer ? 'main' : 'viewer'; syPersist(); reload(); };
+  $('#sy-out', m.el).onclick = async () => { if (!await confirmBox('تسجيل الخروج من السحابة؟ تبقى بيانات هذا الجهاز كما هي.', { ok: 'خروج' })) return; SY.cfg = { dev: SY.cfg.dev, did: SY.cfg.did }; SY.tok = ''; syPersist(); try { localStorage.removeItem('pos-sync-dirty'); } catch { } reload(); };
+};
+
 boot();
 </script>
 </body>

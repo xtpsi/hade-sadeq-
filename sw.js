@@ -1,6 +1,6 @@
 /* Service Worker — يخزّن التطبيق ومكتباته ليعمل بدون إنترنت.
    عند تعديل أي ملف: غيّر رقم VERSION ليظهر للمستخدم "تحديث متاح". */
-const VERSION = 'pos-v1.5.0';
+const VERSION = 'pos-v1.8.0';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-180.png', './icon-maskable-512.png'];
 const J = 'https://cdn.jsdelivr.net/npm/';
 /* [مسار محلي في vendor/، رابط الإنترنت البديل] — يُستخدم المحلي إن وُجد */
@@ -11,7 +11,8 @@ const LIBS = [
   ['./vendor/dexie.min.js', J + 'dexie@3.2.7/dist/dexie.min.js'],
   ['./vendor/JsBarcode.all.min.js', J + 'jsbarcode@3.11.6/dist/JsBarcode.all.min.js'],
   ['./vendor/xlsx.full.min.js', J + 'xlsx@0.18.5/dist/xlsx.full.min.js'],
-  ['./vendor/html5-qrcode.min.js', J + 'html5-qrcode@2.3.8/html5-qrcode.min.js']
+  ['./vendor/html5-qrcode.min.js', J + 'html5-qrcode@2.3.8/html5-qrcode.min.js'],
+  ['./vendor/html2canvas.min.js', J + 'html2canvas@1.4.1/dist/html2canvas.min.js']
 ];
 
 async function putCDN(cache, url) {
@@ -54,6 +55,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (!/^https?:$/.test(url.protocol)) return;
+  if (/^(firestore|identitytoolkit|securetoken)\.googleapis\.com$/.test(url.hostname)) return; /* لا نخزّن طلبات المزامنة */
 
   // صفحة التطبيق: من الكاش فوراً (offline-first) مع التحديث بالخلفية
   if (req.mode === 'navigate') {
