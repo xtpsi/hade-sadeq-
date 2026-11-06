@@ -14,7 +14,7 @@ bad = 0
 try:
     for name, url in {'bootstrap.rtl.min.css': J + 'bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css', 'dexie.min.js': J + 'dexie@3.2.7/dist/dexie.min.js',
                       'JsBarcode.all.min.js': J + 'jsbarcode@3.11.6/dist/JsBarcode.all.min.js', 'xlsx.full.min.js': J + 'xlsx@0.18.5/dist/xlsx.full.min.js',
-                      'html5-qrcode.min.js': J + 'html5-qrcode@2.3.8/html5-qrcode.min.js'}.items():
+                      'html5-qrcode.min.js': J + 'html5-qrcode@2.3.8/html5-qrcode.min.js', 'html2canvas.min.js': J + 'html2canvas@1.4.1/dist/html2canvas.min.js'}.items():
         save(name, get(url))
     base = J + 'bootstrap-icons@1.11.3/font/'
     css = get(base + 'bootstrap-icons.min.css'); save('bootstrap-icons/bootstrap-icons.min.css', css)

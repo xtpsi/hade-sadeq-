@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#4f46e5">
+<meta name="theme-color" content="#1D3B3A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -397,6 +397,29 @@ body{background:radial-gradient(900px 420px at 100% -8%,color-mix(in srgb,var(--
 .tbl tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}
 
 .syban{position:fixed;top:74px;inset-inline-start:10px;z-index:1031;background:var(--warn);color:#000;border-radius:999px;padding:3px 12px;font-size:.74rem;font-weight:700;box-shadow:var(--shadow);pointer-events:none}
+
+/* ===== لوحة ألوان المحل (كريمي + تيل) ===== */
+:root{--color-1:#FAF5EC;--color-2:#EADFC8;--color-3:#D4A373;--color-4:#287271;--color-5:#1D3B3A;
+  --bg:var(--color-1);--surface:color-mix(in srgb,var(--color-1) 55%,#fff);--surface-2:color-mix(in srgb,var(--color-2) 55%,var(--color-1));--ink:var(--color-5);--muted:color-mix(in srgb,var(--color-5) 62%,var(--color-1));--line:var(--color-2);
+  --accent:var(--color-4);--accent-2:color-mix(in srgb,var(--color-4) 72%,var(--color-1));--accent-soft:color-mix(in srgb,var(--color-4) 12%,var(--surface));--accent-ink:var(--color-4);
+  --ok:#2f8f6b;--warn:#b9701f;--bad:#b4432f;
+  --t1:var(--color-4);--t2:color-mix(in srgb,var(--color-3) 78%,#3a2a10);--t3:var(--bad);--t4:var(--warn);--t5:var(--bad);--t6:var(--color-5);
+  --shadow:0 1px 2px rgba(29,59,58,.06),0 14px 30px -18px rgba(29,59,58,.45)}
+[data-bs-theme=dark]{--bg:color-mix(in srgb,var(--color-5) 72%,#000);--surface:var(--color-5);--surface-2:color-mix(in srgb,var(--color-5) 82%,var(--color-4));--ink:var(--color-1);--muted:color-mix(in srgb,var(--color-1) 62%,var(--color-5));--line:color-mix(in srgb,var(--color-1) 14%,var(--color-5));
+  --accent:var(--color-4);--accent-2:color-mix(in srgb,var(--color-4) 72%,var(--color-1));--accent-soft:color-mix(in srgb,var(--color-3) 14%,var(--surface));--accent-ink:var(--color-3);
+  --ok:#8fcfae;--warn:#e3b45c;--bad:#e8907a;
+  --t1:color-mix(in srgb,var(--color-4) 62%,#fff);--t2:var(--color-3);--t3:var(--bad);--t4:var(--warn);--t5:var(--bad);--t6:var(--color-2);
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 14px 30px -16px rgba(0,0,0,.7)}
+.tag.g1{--tc:var(--t1)}.tag.g2{--tc:var(--t2)}.tag.g3{--tc:var(--t3)}.tag.g4{--tc:var(--t4)}.tag.g5{--tc:var(--t5)}.tag.g6{--tc:var(--t6)}
+.topbar{color:var(--color-1)}
+.bnav a.active,.bnav a.active span{color:var(--accent-ink)}
+.dotbadge{background:var(--color-3);color:var(--color-5)}
+#lock{background:linear-gradient(160deg,var(--color-5),color-mix(in srgb,var(--color-4) 55%,var(--color-5)));color:var(--color-1)}
+.ucard.on{background:var(--color-1);color:var(--color-5)}
+.bar.today .col{background:linear-gradient(180deg,var(--color-3),color-mix(in srgb,var(--color-3) 65%,#000))}
+@media print{
+  html,body{height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important}
+}
 </style>
 </head>
 <body data-screen="dashboard">
@@ -414,7 +437,7 @@ body{background:radial-gradient(900px 420px at 100% -8%,color-mix(in srgb,var(--
 /* =====================================================================
    نظام المبيعات والمخزون — PWA يعمل بدون إنترنت
    ===================================================================== */
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '2.0.1';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -464,6 +487,7 @@ db.version(1).stores({
   settings: 'key',
   counters: 'key'
 });
+db.version(2).stores({ adjustments: '++id,kind,partyId,ts' });
 
 /* ---------- الإعدادات ---------- */
 const DEFAULTS = {
@@ -948,9 +972,10 @@ function printHTML(html, { paper = S.paper } = {}) {
   renderBarcodes(area);
   const PS = { a4: '@page{size:A4;margin:10mm}', a5: '@page{size:A5 portrait;margin:8mm}', a5h: '@page{size:A5 landscape;margin:7mm}', a4h: '@page{size:A4 portrait;margin:6mm}' };
   $('#pageStyle').textContent = PS[paper] || `@page{size:${paper}mm auto;margin:2mm}`;
+  window.scrollTo(0, 0); document.body.classList.remove('mx-open');
   setTimeout(() => window.print(), 200);
 }
-window.addEventListener('afterprint', () => { const a = $('#printArea'); if (a) a.innerHTML = ''; });
+window.addEventListener('afterprint', () => { const a = $('#printArea'); if (a) a.innerHTML = ''; if ($('.mx-wrap')) document.body.classList.add('mx-open'); });
 
 /* ---------- تحميل المكتبات الثقيلة عند الحاجة (تُخزَّن للعمل بدون إنترنت) ---------- */
 const LIBS = {
@@ -1473,12 +1498,22 @@ async function viewPOS(el) {
   if (!State.cart) State.cart = loadCart() || newCart();
   el.innerHTML = `<div class="row g-3 stage">
     <div class="col-lg-7"><div class="sbox" id="possearch"></div>
-      <div class="d-flex align-items-center justify-content-between mt-3 mb-2"><h6 class="sec-title m-0"><i class="bi bi-lightning-charge-fill"></i> الأكثر مبيعاً</h6><span class="small text-muted d-none d-md-inline">F4 بحث · F2 إتمام · F8 تعليق</span></div>
+      <div class="chips mt-2" id="poscats"></div>
+      <div class="d-flex align-items-center justify-content-between mt-3 mb-2"><h6 class="sec-title m-0" id="qtitle"><i class="bi bi-lightning-charge-fill"></i> الأكثر مبيعاً</h6><span class="small text-muted d-none d-md-inline">F4 بحث · F2 إتمام · F8 تعليق</span></div>
       <div class="qgrid" id="qgrid"></div></div>
     <div class="col-lg-5"><div id="cartBox" class="sticky-lg"></div></div></div>`;
   mountSearch($('#possearch'), { placeholder: 'اكتب جزء من اسم المنتج أو الباركود أو التصنيف...', onSelect: p => addToCart(p), autofocus: true });
   drawQuick(); drawCart();
 }
+const POSCAT = { cat: '' };
+function drawPosCats() {
+  const cnt = {}; let none = 0; State.products.forEach(p => { if (p.category) cnt[p.category] = (cnt[p.category] || 0) + 1; else none++; });
+  const cats = [...new Set([...State.categories, ...Object.keys(cnt)])].filter(c => cnt[c]);
+  const chips = [['', '<i class="bi bi-grid-fill"></i> الكل'], ...cats.map(c => [c, `${esc(c)} <small class="opacity-75">${fmtNum(cnt[c])}</small>`]), ...(none ? [['__none', `بدون تصنيف <small class="opacity-75">${fmtNum(none)}</small>`]] : [])];
+  const b = $('#poscats'); if (b) b.innerHTML = chips.map(([k, t]) => `<button type="button" class="fchip ${POSCAT.cat === k ? 'on' : ''}" data-act="pos-cat" data-v="${esc(k)}">${t}</button>`).join('');
+  const t = $('#qtitle'); if (t) t.innerHTML = POSCAT.cat === '__none' ? '<i class="bi bi-tags-fill"></i> بدون تصنيف' : POSCAT.cat ? `<i class="bi bi-tags-fill"></i> ${esc(POSCAT.cat)}` : '<i class="bi bi-lightning-charge-fill"></i> الأكثر مبيعاً';
+}
+A['pos-cat'] = el => { POSCAT.cat = el.dataset.v; drawQuick(); };
 function quickList() {
   const n = S.quickCount, flagged = State.products.filter(p => p.quick).sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0));
   if (flagged.length >= n) return flagged;
@@ -1487,11 +1522,12 @@ function quickList() {
 }
 function drawQuick() {
   const g = $('#qgrid'); if (!g) return;
-  const q = quickList();
+  drawPosCats();
+  const q = POSCAT.cat ? State.products.filter(p => POSCAT.cat === '__none' ? !p.category : p.category === POSCAT.cat).sort((a, b) => a.name.localeCompare(b.name, 'ar')) : quickList();
   g.innerHTML = q.length ? q.map(p => {
     const st = stockState(p);
     return `<button class="qbtn" data-act="q-add" data-id="${p.id}"><span class="n">${esc(p.name)}</span><span class="qf"><span class="p num">${money(p.retailPrice)}</span><span class="st chip ${st === 'ok' ? 'ok' : st === 'low' ? 'warn' : 'bad'}">${st === 'out' ? 'نفد' : fmtNum(p.qty)}</span></span></button>`;
-  }).join('') : empty('bi-lightning', 'فعّل "الأزرار السريعة" من نموذج المنتج، أو بيع كم منتج وراح تظهر هنا تلقائياً');
+  }).join('') : POSCAT.cat ? empty('bi-box-seam', 'لا توجد منتجات في هذا التصنيف') : empty('bi-lightning', 'فعّل "الأزرار السريعة" من نموذج المنتج، أو بيع كم منتج وراح تظهر هنا تلقائياً');
 }
 A['q-add'] = el => { const p = State.pmap.get(+el.dataset.id); if (p) addToCart(p); };
 
@@ -1768,6 +1804,17 @@ function jpegsToPDF(pages, wp, hp) {
   push(x + `trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
   return new Blob(parts, { type: 'application/pdf' });
 }
+function pdfCss() {
+  let out = `:root{--font:${getComputedStyle(document.documentElement).getPropertyValue('--font') || "'IBM Plex Sans Arabic',Tahoma,sans-serif"}}`;
+  for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch { continue; } for (const r of rules) if (r.type === 1 && /\.(inv|cutline|sign)\b/.test(r.selectorText || '') && !/color-mix|var\(--(?!font)/.test(r.cssText)) out += r.cssText; }
+  return out;
+}
+function trimTop(cv, keep) {
+  const w = cv.width, hh = cv.height, cx = cv.getContext('2d'); let y = 0;
+  outer: for (; y < hh; y += 8) { const d = cx.getImageData(0, y, w, Math.min(8, hh - y)).data; for (let i = 0; i < d.length; i += 4) if (d[i] < 240 || d[i + 1] < 240 || d[i + 2] < 240) break outer; }
+  const s = Math.max(0, y - keep); if (s < 4 || y >= hh) return cv;
+  const o = document.createElement('canvas'); o.width = w; o.height = hh - s; o.getContext('2d').drawImage(cv, 0, s, w, hh - s, 0, 0, w, hh - s); return o;
+}
 async function receiptToPDF(s, htmlOverride) {
   await ensureLib('h2c');
   const f = S.paper === 'a5' ? { w: 559, h: 794, wp: 420, hp: 595 } : S.paper === 'a5h' ? { w: 794, h: 559, wp: 595, hp: 420 } : { w: 794, h: 1123, wp: 595, hp: 842 };
@@ -1777,7 +1824,9 @@ async function receiptToPDF(s, htmlOverride) {
   const box = document.createElement('div');
   box.style.cssText = `position:fixed;left:-99999px;top:0;width:${f.w}px;padding:24px;box-sizing:border-box;background:#fff;color:#000;direction:rtl`;
   box.innerHTML = html; document.body.appendChild(box);
-  let canvas; try { canvas = await html2canvas(box, { scale: 2, backgroundColor: '#ffffff', useCORS: true }); } finally { box.remove(); }
+  window.scrollTo(0, 0); let canvas; const pcss = pdfCss();
+  try { canvas = await html2canvas(box, { scale: 2, backgroundColor: '#ffffff', useCORS: true, scrollX: 0, scrollY: 0, onclone: d => { d.documentElement.removeAttribute('data-bs-theme'); d.querySelectorAll('style,link[rel=stylesheet]').forEach(n => { if (!(n.tagName === 'LINK' && /font/i.test(n.getAttribute('href') || ''))) n.remove(); }); const st = d.createElement('style'); st.textContent = pcss; d.head.appendChild(st); d.documentElement.style.background = '#fff'; d.body.style.cssText = 'margin:0;background:#fff;color:#000'; } }); } finally { box.remove(); }
+  canvas = trimTop(canvas, 48);
   const pagePx = f.h * 2, pages = [];
   for (let i = 0; i * pagePx < canvas.height; i++) {
     const hh = Math.min(pagePx, canvas.height - i * pagePx), c = document.createElement('canvas'); c.width = canvas.width; c.height = hh;
@@ -1805,7 +1854,7 @@ function docHTML(s, o) {
 }
 function showDoc(title, html, s, extra = '') {
   const m = openModal({ title: `<i class="bi bi-file-earmark-text"></i> ${title}`, size: 'lg', body: html, footer: `<button class="btn btn-accent" data-p><i class="bi bi-printer"></i> طباعة</button><button class="btn btn-soft" data-pdf><i class="bi bi-filetype-pdf"></i> PDF</button>${extra}<button class="btn btn-light" data-mx-close>إغلاق</button>` });
-  $('[data-p]', m.el).onclick = () => printHTML(html);
+  $('[data-p]', m.el).onclick = () => printHTML(html, { paper: S.paper === 'a5' || S.paper === 'a5h' ? S.paper : 'a4' });
   $('[data-pdf]', m.el).onclick = () => sharePDF(Object.assign({ no: title }, s), html).catch(fail);
   return m;
 }
@@ -1815,13 +1864,25 @@ A['cart-quote'] = () => {
   showDoc('عرض سعر', docHTML(s, { title: 'عرض سعر', prices: true, note: 'هذا العرض صالح لمدة 7 أيام من تاريخه.', sign1: 'الزبون', sign2: 'المحاسب' }), s);
 };
 A['low-list'] = () => {
-  const low = State.products.filter(p => stockState(p) !== 'ok').sort((a, b) => (a.category || '').localeCompare(b.category || '', 'ar') || a.qty - b.qty);
+  const low = State.products.filter(p => stockState(p) !== 'ok');
   if (!low.length) return toast('لا توجد نواقص ✓', 'success');
   const need = p => Math.max(1, Math.ceil((p.alertQty ?? S.lowStockDefault) * 2 - p.qty));
-  const html = `<div class="inv"><div class="inv-h"><div class="inv-shop"><h2>${esc(S.shopName)}</h2></div><div class="inv-title"><b>قائمة النواقص</b><div>التاريخ: <span class="num">${fmtDT(Date.now())}</span></div></div></div><table class="inv-t"><thead><tr><th>#</th><th>المادة</th><th>الموجود</th><th>المطلوب</th></tr></thead><tbody>${low.map((p, i) => `<tr><td class="n">${fmtNum(i + 1)}</td><td>${esc(p.name)}</td><td class="n">${fmtNum(p.qty)}</td><td class="n">${fmtNum(need(p))}</td></tr>`).join('')}</tbody></table></div>`;
-  const text = `*قائمة النواقص — ${S.shopName}*\n` + low.map(p => `• ${p.name}: الموجود ${fmtNum(p.qty)} — المطلوب ${fmtNum(need(p))}`).join('\n');
-  const m = showDoc(`قائمة النواقص (${fmtNum(low.length)})`, html, { no: 'نواقص' }, '<button class="btn btn-success" data-wa><i class="bi bi-whatsapp"></i> واتساب</button>');
-  $('[data-wa]', m.el).onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  const groups = {}; low.forEach(p => { const k = p.category || 'بدون تصنيف'; (groups[k] = groups[k] || []).push(p); });
+  const cats = Object.keys(groups).sort((a, b) => a.localeCompare(b, 'ar')); cats.forEach(c => groups[c].sort((a, b) => a.name.localeCompare(b.name, 'ar')));
+  const F = { cat: '' }, view = () => cats.filter(c => !F.cat || c === F.cat);
+  const Q = new Map(low.map(p => [p.id, need(p)])), cost = p => round2((Q.get(p.id) || 0) * (p.buyPrice || 0)), sub = c => groups[c].reduce((a, p) => a + cost(p), 0), total = () => view().reduce((a, c) => a + sub(c), 0);
+  const chips = () => [['', `الكل <small class="opacity-75">${fmtNum(low.length)}</small>`], ...cats.map(c => [c, `${esc(c)} <small class="opacity-75">${fmtNum(groups[c].length)}</small>`])].map(([k, t]) => `<button type="button" class="fchip ${F.cat === k ? 'on' : ''}" data-lc="${esc(k)}">${t}</button>`).join('');
+  const body = () => '<div class="small text-muted mb-1">كل تصنيف = مورد. اختر تصنيفاً من الأعلى لترى نواقصه فقط. عدّل «المطلوب» والمبالغ تُحسب تلقائياً (صفر = لا يُطلب). زر واتساب يرسل طلب ذلك التصنيف فقط.</div>' + view().map(c => `<div class="mt-3 d-flex align-items-center gap-2"><h6 class="sec-title m-0 flex-grow-1">${esc(c)} <span class="chip">${fmtNum(groups[c].length)}</span></h6><b class="num" data-sub="${esc(c)}">${money(sub(c))}</b><button class="btn btn-sm btn-success" data-wa="${esc(c)}" aria-label="واتساب"><i class="bi bi-whatsapp"></i></button></div>
+    <div class="tbl-wrap" style="max-height:none"><table class="tbl"><thead><tr><th>المادة</th><th>الموجود</th><th>المطلوب</th><th>سعر الشراء</th><th>المبلغ</th></tr></thead><tbody>${groups[c].map(p => `<tr><td>${esc(p.name)}</td><td class="num">${fmtNum(p.qty)}</td><td><input class="form-control form-control-sm num" data-q="${p.id}" inputmode="decimal" value="${Q.get(p.id)}" style="width:72px"></td><td class="num">${p.buyPrice ? fmtNum(p.buyPrice) : '—'}</td><td class="num" data-c="${p.id}">${fmtNum(cost(p))}</td></tr>`).join('')}</tbody></table></div>`).join('');
+  const doc = () => `<div class="inv"><div class="inv-h"><div class="inv-shop"><h2>${esc(S.shopName)}</h2></div><div class="inv-title"><b>قائمة النواقص${F.cat ? ' — ' + esc(F.cat) : ''}</b><div>التاريخ: <span class="num">${fmtDT(Date.now())}</span></div></div></div>` + view().map(c => { const it = groups[c].filter(p => (Q.get(p.id) || 0) > 0); if (!it.length) return ''; return `<h4 style="margin:10px 0 4px">${esc(c)}</h4><table class="inv-t"><thead><tr><th>#</th><th>المادة</th><th>الموجود</th><th>المطلوب</th><th>سعر الشراء</th><th>المبلغ</th></tr></thead><tbody>${it.map((p, i) => `<tr><td class="n">${fmtNum(i + 1)}</td><td>${esc(p.name)}</td><td class="n">${fmtNum(p.qty)}</td><td class="n">${fmtNum(Q.get(p.id))}</td><td class="n">${fmtNum(p.buyPrice || 0)}</td><td class="n">${fmtNum(cost(p))}</td></tr>`).join('')}</tbody></table><div class="inv-words">مجموع ${esc(c)}: ${money(sub(c))}</div>`; }).join('') + `<div class="inv-words">${F.cat ? 'إجمالي ' + esc(F.cat) : 'الإجمالي الكلي المتوقع'}: ${money(total())}</div></div>`;
+  const m = openModal({ title: `<i class="bi bi-cart-plus"></i> قائمة النواقص (${fmtNum(low.length)})`, size: 'lg', body: '<div class="chips mb-2" id="ll-c"></div><div id="ll-b"></div>', footer: `<div class="me-auto fw-bold">الإجمالي: <span class="num" id="ll-t">${money(total())}</span></div><button class="btn btn-accent" data-p><i class="bi bi-printer"></i></button><button class="btn btn-soft" data-pdf><i class="bi bi-filetype-pdf"></i> PDF</button><button class="btn btn-light" data-mx-close>إغلاق</button>` });
+  const box = $('#ll-b', m.el), paint = () => { $('#ll-c', m.el).innerHTML = chips(); box.innerHTML = body(); $('#ll-t', m.el).textContent = money(total()); }; paint();
+  const upd = () => { $('#ll-t', m.el).textContent = money(total()); $$('[data-sub]', box).forEach(e => { e.textContent = money(sub(e.dataset.sub)); }); $$('[data-c]', box).forEach(e => { e.textContent = fmtNum(cost(State.pmap.get(+e.dataset.c))); }); };
+  $('#ll-c', m.el).addEventListener('click', e => { const b = e.target.closest('[data-lc]'); if (!b) return; F.cat = b.dataset.lc; paint(); });
+  box.addEventListener('input', e => { const i = e.target.closest('[data-q]'); if (!i) return; Q.set(+i.dataset.q, Math.max(0, toNum(i.value))); upd(); });
+  box.addEventListener('click', e => { const b = e.target.closest('[data-wa]'); if (!b) return; const c = b.dataset.wa, it = groups[c].filter(p => (Q.get(p.id) || 0) > 0); if (!it.length) return toast('لا توجد مواد مطلوبة في هذا التصنيف', 'warning'); window.open('https://wa.me/?text=' + encodeURIComponent(`*طلب مواد — ${S.shopName}*\n*${c}*\n` + it.map(p => `• ${p.name}: ${fmtNum(Q.get(p.id))}`).join('\n')), '_blank'); });
+  $('[data-p]', m.el).onclick = () => printHTML(doc(), { paper: 'a4' });
+  $('[data-pdf]', m.el).onclick = () => sharePDF({ no: 'نواقص' }, doc()).catch(fail);
 };
 A['test-print'] = () => {
   const items = [['سلكوان أبيض توب اكس', 2, 2500], ['براغي خشب 4 ملم', 10, 250], ['فيشر بلاستيك', 5, 500], ['صبغ جدران أبيض 4 لتر', 1, 18000]].map(([name, qty, price]) => ({ pid: 0, name, qty, price, cost: price * 0.8, factor: 1, unit: 'قطعة' }));
@@ -2070,9 +2131,9 @@ async function viewDashboard(el) {
       ${can('purchases') ? tag('g6', 'ديون الموردين', fmtNum(supDebt) + `<small>${esc(S.currencySymbol)}</small>`, `${fmtNum(State.suppliers.filter(s => s.balance > 0).length)} مورد`, 'purchases') : tag('g6', 'الصندوق', 'فتح', 'الوردية والكاش', 'shift')}
     </div>
     <div class="row g-2 mb-3">
-      ${qa('bi-cart-plus-fill', 'بيع', { a: 'go', to: 'pos' }, '#0e8f6a', '#35c79a')}${qa('bi-arrow-return-left', 'مرتجع', { a: 'go', to: 'returns' }, '#d6264b', '#f0668f')}
-      ${can('products_edit') ? qa('bi-box-seam-fill', 'إضافة منتج', { a: 'p-add' }, '#d9730d', '#f6a94a') : qa('bi-people-fill', 'الزبائن', { a: 'go', to: 'customers' }, '#c2255c', '#f0668f')}
-      ${can('reports') ? qa('bi-graph-up-arrow', 'تقارير', { a: 'go', to: 'reports' }, '#6d3fc9', '#a47cf0') : qa('bi-safe-fill', 'الصندوق', { a: 'go', to: 'shift' }, '#6d3fc9', '#a47cf0')}</div>
+      ${qa('bi-cart-plus-fill', 'بيع', { a: 'go', to: 'pos' }, '#287271', '#4a9a97')}${qa('bi-arrow-return-left', 'مرتجع', { a: 'go', to: 'returns' }, '#a8703f', '#D4A373')}
+      ${can('products_edit') ? qa('bi-box-seam-fill', 'إضافة منتج', { a: 'p-add' }, '#a8703f', '#D4A373') : qa('bi-people-fill', 'الزبائن', { a: 'go', to: 'customers' }, '#a8703f', '#D4A373')}
+      ${can('reports') ? qa('bi-graph-up-arrow', 'تقارير', { a: 'go', to: 'reports' }, '#287271', '#4a9a97') : qa('bi-safe-fill', 'الصندوق', { a: 'go', to: 'shift' }, '#287271', '#4a9a97')}</div>
     <div class="cardx mb-3"><h6 class="sec-title"><i class="bi bi-bar-chart-fill"></i> مبيعات آخر 7 أيام ${mx >= 1e6 ? '<small class="text-muted fw-normal">(بالملايين)</small>' : mx >= 1e3 ? '<small class="text-muted fw-normal">(بالآلاف)</small>' : ''}</h6>
       <div class="bars">${days.map((x, i) => `<div class="bar ${i === 6 ? 'today' : ''}" data-act="bar-tip"><div class="col" style="height:${Math.max(3, x.v / mx * 100)}%">${x.v ? `<span class="v">${barLbl(x.v, mx)}</span>` : ''}</div>
         <span class="d">${new Date(x.d).toLocaleDateString(loc(), { weekday: 'short' })}</span><span class="tip">${fmtDate(x.d)} — ${money(x.v)}</span></div>`).join('')}</div></div>
@@ -2222,6 +2283,95 @@ A['ent-del'] = async el => {
   if (!await confirmBox(`حذف ${E.label} <b>${esc(o.name)}</b>؟`, { danger: true, ok: 'حذف' })) return;
   await E.tbl().delete(o.id); audit('حذف ' + E.label, o.name); await E.load(); toast('تم الحذف', 'success'); refreshView();
 };
+
+/* ---------- حركات الحساب: إضافة دين / إلغاء حركة / سند قبض / لوحة الديون ---------- */
+A['ent-debt'] = el => {
+  const kind = el.dataset.kind, E = ENT[kind], isC = kind === 'customer', o = E.list().find(x => x.id === +el.dataset.id); if (!o) return;
+  if (!(isC ? can('customers_edit') : can('purchases'))) return toast('غير مصرّح', 'warning');
+  const m = openModal({ title: `<i class="bi bi-plus-circle"></i> ${isC ? 'إضافة دين على الزبون' : 'إضافة مستحق للمورد'}`, size: 'sm',
+    body: `<div class="mb-2"><b>${esc(o.name)}</b><div class="small text-muted">الرصيد الحالي: <b class="num">${money(o.balance || 0)}</b></div></div><label class="form-label">المبلغ</label><input class="form-control form-control-lg num" id="ad-a" inputmode="decimal" placeholder="0"><label class="form-label mt-2">السبب / ملاحظة</label><input class="form-control" id="ad-n" placeholder="مثال: دين سابق، بضاعة بالأجل"><div class="small text-muted mt-2">إذا أضفتَه بالخطأ تستطيع إلغاءه من زر «حركات الحساب».</div>`,
+    footer: '<button class="btn btn-light" data-mx-close>إلغاء</button><button class="btn btn-accent" id="ad-go">إضافة</button>' });
+  $('#ad-go', m.el).onclick = async () => {
+    const amt = toNum($('#ad-a', m.el).value); if (amt <= 0) return toast('اكتب مبلغاً صحيحاً', 'warning');
+    if (isC && o.creditLimit > 0 && (o.balance || 0) + amt > o.creditLimit && !await confirmBox('سيتجاوز الزبون سقف الدين. متابعة؟')) return;
+    try {
+      await db.transaction('rw', E.tbl(), db.adjustments, async () => {
+        const cur = await E.tbl().get(o.id); await E.tbl().update(o.id, { balance: round2((cur.balance || 0) + amt) });
+        await db.adjustments.add({ kind, partyId: o.id, name: o.name, amount: amt, note: $('#ad-n', m.el).value.trim(), ts: Date.now(), userName: State.user.name });
+      });
+      audit('إضافة ' + (isC ? 'دين' : 'مستحق'), `${o.name}: ${money(amt)}`); await E.load(); m.close(); toast('تمت الإضافة', 'success'); refreshView();
+    } catch (e) { fail(e); }
+  };
+  setTimeout(() => $('#ad-a', m.el).focus(), 300);
+};
+async function movesData(kind, id) {
+  const E = ENT[kind];
+  const pays = (await E.pay().where(E.key).equals(id).toArray()).map(p => ({ t: 'pay', id: p.id, ts: p.ts, amount: p.amount, method: p.method, note: p.note, user: p.userName, voided: p.voided, vby: p.voidedBy }));
+  const adjs = (await db.adjustments.where('partyId').equals(id).toArray()).filter(a => a.kind === kind).map(a => ({ t: 'adj', id: a.id, ts: a.ts, amount: a.amount, note: a.note, user: a.userName, voided: a.voided, vby: a.voidedBy }));
+  return pays.concat(adjs).sort((a, b) => b.ts - a.ts);
+}
+function voucherHTML(kind, o, p) {
+  const isC = kind === 'customer';
+  return `<div class="inv"><div class="inv-h"><div class="inv-shop"><h2>${esc(S.shopName)}</h2>${[S.shopPhone, S.shopAddress].filter(Boolean).map(esc).join(' · ')}</div><div class="inv-title"><b>${isC ? 'سند قبض' : 'سند دفع'}</b><div>التاريخ: <span class="num">${fmtDT(p.ts)}</span></div></div></div>
+    <div class="inv-meta"><div>${isC ? 'استلمنا من السيد' : 'دفعنا إلى السيد'}: <b>${esc(o.name)}</b></div>${p.method ? `<div>الدفع: ${METHODS[p.method] || ''}</div>` : ''}</div>
+    <div class="inv-tot" style="margin:8px 0"><div class="g"><span>المبلغ</span><span class="num">${money(p.amount)}</span></div><div><span>الرصيد المتبقي</span><span class="num">${money(o.balance || 0)}</span></div></div>
+    <div class="inv-words">فقط ${numToArabicWords(p.amount)} دينار عراقي لا غير</div>${p.note ? `<div class="inv-meta"><div>ملاحظة: ${esc(p.note)}</div></div>` : ''}
+    <div class="sign"><span>${isC ? 'المستلم' : 'المستلم للمبلغ'}: ..............</span><span>المحاسب: ..............</span></div></div>`;
+}
+A['ent-moves'] = async el => {
+  const kind = el.dataset.kind, id = +el.dataset.id, E = ENT[kind], isC = kind === 'customer';
+  const m = openModal({ title: '<i class="bi bi-clock-history"></i> حركات الحساب', size: 'lg', body: '<div id="mv-b"></div>', footer: '<button class="btn btn-light" data-mx-close>إغلاق</button>' });
+  const box = $('#mv-b', m.el);
+  const canVoid = x => can('delete') || (x.user === State.user.name && Date.now() - x.ts < 86400000);
+  const draw = async () => {
+    const o = E.list().find(x => x.id === id), mv = await movesData(kind, id);
+    box.innerHTML = `<div class="cardx mb-2"><b>${esc(o.name)}</b><div class="small">الرصيد الحالي: <b class="num ${o.balance > 0 ? 'text-danger' : ''}">${money(o.balance || 0)}</b></div></div>
+      <div class="small text-muted mb-2">هنا تُلغى الدفعات والديون المضافة بالخطأ، ويرجع الرصيد تلقائياً. أما دين ناتج عن <b>فاتورة</b> فيُلغى بإلغاء الفاتورة نفسها من شاشة الفواتير.</div>
+      ${mv.length ? mv.map(x => `<div class="rowx" style="${x.voided ? 'opacity:.5' : ''}"><div class="grow"><div class="t">${x.t === 'pay' ? (isC ? 'تسديد' : 'دفعة') : (isC ? 'دين مضاف' : 'مستحق مضاف')} · <b class="num">${money(x.amount)}</b> ${x.voided ? '<span class="chip bad">ملغاة</span>' : ''}</div><div class="s">${fmtDT(x.ts)}${x.user ? ' · ' + esc(x.user) : ''}${x.note ? ' · ' + esc(x.note) : ''}${x.voided && x.vby ? ' · ألغاها ' + esc(x.vby) : ''}</div></div>
+        ${x.t === 'pay' && !x.voided ? `<button class="btn btn-sm btn-soft" data-pr="${x.id}" aria-label="طباعة سند"><i class="bi bi-printer"></i></button>` : ''}${!x.voided && canVoid(x) ? `<button class="btn btn-sm btn-outline-danger" data-v="${x.t}:${x.id}">إلغاء</button>` : ''}</div>`).join('') : empty('bi-clock-history', 'لا توجد حركات يدوية بعد')}`;
+  };
+  await draw();
+  box.addEventListener('click', async e => {
+    const pr = e.target.closest('[data-pr]'), vb = e.target.closest('[data-v]');
+    if (pr) { const o = E.list().find(x => x.id === id), p = await E.pay().get(+pr.dataset.pr); if (p) showDoc(isC ? 'سند قبض' : 'سند دفع', voucherHTML(kind, o, p), { no: 'سند-' + p.id }); return; }
+    if (!vb) return;
+    const [t, rid] = vb.dataset.v.split(':'); if (!await confirmBox('إلغاء هذه الحركة؟ سيُعاد الرصيد كما كان قبلها.', { danger: true, ok: 'إلغاء الحركة' })) return;
+    try {
+      await db.transaction('rw', E.tbl(), E.pay(), db.adjustments, async () => {
+        const rec = t === 'pay' ? await E.pay().get(+rid) : await db.adjustments.get(+rid); if (!rec || rec.voided) return;
+        const cur = await E.tbl().get(id), amt = rec.amount, nb = t === 'pay' ? (cur.balance || 0) + amt : (cur.balance || 0) - amt;
+        await E.tbl().update(id, { balance: round2(nb) });
+        await (t === 'pay' ? E.pay() : db.adjustments).update(+rid, { voided: true, voidedAt: Date.now(), voidedBy: State.user.name });
+      });
+      audit('إلغاء حركة حساب', `${E.list().find(x => x.id === id)?.name || ''}`); await E.load(); await draw(); refreshView(); toast('تم إلغاء الحركة', 'success');
+    } catch (err) { fail(err); }
+  });
+};
+const DB_ = { sort: 'amt' };
+A['debts-open'] = async () => {
+  const m = openModal({ title: '<i class="bi bi-cash-stack"></i> الديون والتحصيل', size: 'lg', body: '<div id="db-b"></div>', footer: '<button class="btn btn-accent" data-p><i class="bi bi-printer"></i> طباعة</button><button class="btn btn-light" data-mx-close>إغلاق</button>' });
+  const box = $('#db-b', m.el);
+  const [sales, pays] = await Promise.all([db.sales.toArray(), db.customerPayments.toArray()]);
+  const last = new Map(), now = Date.now(), mon = new Date(); mon.setDate(1); mon.setHours(0, 0, 0, 0); let collected = 0;
+  const bump = (cid, ts) => { if (cid && ts > (last.get(cid) || 0)) last.set(cid, ts); };
+  sales.filter(s => s.status !== 'void').forEach(s => bump(s.customerId, s.ts));
+  pays.filter(p => !p.voided).forEach(p => { bump(p.customerId, p.ts); if (p.ts >= mon.getTime()) collected += p.amount; });
+  const list = State.customers.filter(c => c.balance > 0).map(c => ({ c, last: last.get(c.id) || c.createdAt || 0 })).map(x => ({ ...x, days: x.last ? Math.floor((now - x.last) / DAY) : 0 }));
+  const total = list.reduce((a, x) => a + x.c.balance, 0), over = list.filter(x => x.days > 30).reduce((a, x) => a + x.c.balance, 0);
+  const sorted = () => list.slice().sort((a, b) => DB_.sort === 'age' ? b.days - a.days : b.c.balance - a.c.balance);
+  const ago = d => d <= 0 ? 'اليوم' : d === 1 ? 'أمس' : `قبل ${fmtNum(d)} يوم`;
+  const draw = () => {
+    box.innerHTML = `<div class="row g-2 mb-2"><div class="col-6"><div class="cardx"><div class="small text-muted">إجمالي الديون</div><b class="num text-danger">${money(total)}</b><div class="small">${fmtNum(list.length)} زبون</div></div></div>
+      <div class="col-6"><div class="cardx"><div class="small text-muted">متأخرة أكثر من 30 يوماً</div><b class="num" style="color:var(--warn)">${money(over)}</b></div></div>
+      <div class="col-12"><div class="cardx"><div class="small text-muted">المحصَّل هذا الشهر</div><b class="num" style="color:var(--ok)">${money(collected)}</b></div></div></div>
+      <div class="tabs mb-2"><button type="button" class="${DB_.sort === 'amt' ? 'on' : ''}" data-s="amt">الأكبر ديناً</button><button type="button" class="${DB_.sort === 'age' ? 'on' : ''}" data-s="age">الأقدم حركة</button></div>
+      ${list.length ? sorted().map(x => `<div class="rowx"><div class="grow"><div class="t">${esc(x.c.name)}</div><div class="s">${x.c.phone ? esc(x.c.phone) + ' · ' : ''}آخر حركة: <span class="chip ${x.days > 30 ? 'bad' : x.days > 14 ? 'warn' : 'mut'}">${ago(x.days)}</span></div></div><b class="num text-danger">${money(x.c.balance)}</b>
+        <div class="d-flex gap-1"><button class="icb" style="background:color-mix(in srgb,var(--ok) 18%,var(--surface));color:var(--ok)" data-act="ent-pay" data-kind="customer" data-id="${x.c.id}" aria-label="تسديد"><i class="bi bi-cash-coin"></i></button>${x.c.phone ? `<button class="icb" data-act="ent-wa" data-id="${x.c.id}" aria-label="تذكير"><i class="bi bi-whatsapp"></i></button>` : ''}<button class="icb" data-act="ent-stmt" data-kind="customer" data-id="${x.c.id}" aria-label="كشف حساب"><i class="bi bi-file-text"></i></button><button class="icb" data-act="ent-moves" data-kind="customer" data-id="${x.c.id}" aria-label="الحركات"><i class="bi bi-clock-history"></i></button></div></div>`).join('') : empty('bi-emoji-smile', 'لا توجد ديون 🎉')}`;
+  };
+  draw();
+  box.addEventListener('click', e => { const b = e.target.closest('[data-s]'); if (b) { DB_.sort = b.dataset.s; draw(); } });
+  $('[data-p]', m.el).onclick = () => printHTML(`<div class="doc"><h3>${esc(S.shopName)} — كشف الديون</h3><div>${fmtDT(Date.now())}</div><table><thead><tr><th>#</th><th>الزبون</th><th>الهاتف</th><th>آخر حركة</th><th>الدين</th></tr></thead><tbody>${sorted().map((x, i) => `<tr><td>${fmtNum(i + 1)}</td><td>${esc(x.c.name)}</td><td>${esc(x.c.phone || '')}</td><td>${ago(x.days)}</td><td><b>${fmtNum(x.c.balance)}</b></td></tr>`).join('')}</tbody></table><h4>الإجمالي: ${money(total)}</h4></div>`, { paper: 'a4' });
+};
 A['ent-wa'] = el => {
   const o = State.customers.find(x => x.id === +el.dataset.id); if (!o || !o.phone) return toast('لا يوجد رقم هاتف', 'warning');
   window.open(waLink(o.phone, `السلام عليكم ${o.name}،\nنذكّركم بوجود مبلغ مستحق قدره ${money(o.balance)} لدى ${S.shopName}.\nشاكرين تعاونكم.`), '_blank');
@@ -2238,7 +2388,8 @@ async function buildStatement(kind, id) {
     (await db.purchases.where('supplierId').equals(id).toArray()).forEach(p => rows.push({ ts: p.ts, desc: `فاتورة شراء ${p.no}`, note: `الإجمالي ${money(p.total)} — المدفوع ${money(p.paid)}`, debit: p.due, credit: 0 }));
     (await db.purchaseReturns.where('supplierId').equals(id).toArray()).filter(r => r.method === 'debt').forEach(r => rows.push({ ts: r.ts, desc: `مرتجع شراء ${r.no}`, debit: 0, credit: r.total }));
   }
-  (await E.pay().where(E.key).equals(id).toArray()).forEach(p => rows.push({ ts: p.ts, desc: kind === 'customer' ? 'تسديد' : 'دفعة', note: (METHODS[p.method] || '') + (p.note ? ' — ' + p.note : ''), debit: 0, credit: p.amount }));
+  (await E.pay().where(E.key).equals(id).toArray()).filter(p => !p.voided).forEach(p => rows.push({ ts: p.ts, desc: kind === 'customer' ? 'تسديد' : 'دفعة', note: (METHODS[p.method] || '') + (p.note ? ' — ' + p.note : ''), debit: 0, credit: p.amount }));
+  (await db.adjustments.where('partyId').equals(id).toArray()).filter(a => a.kind === kind && !a.voided).forEach(a => rows.push({ ts: a.ts, desc: kind === 'customer' ? 'دين مضاف' : 'مستحق مضاف', note: a.note || '', debit: a.amount, credit: 0 }));
   rows.sort((a, b) => a.ts - b.ts);
   let bal = 0; rows.forEach(r => { bal = round2(bal + r.debit - r.credit); r.bal = bal; });
   return { o, rows };
@@ -2280,9 +2431,11 @@ function entityRow(kind, o, tokens) {
   const isC = kind === 'customer', canEdit = isC ? can('customers_edit') : can('purchases');
   return `<div class="rowx" style="align-items:flex-start"><div class="grow"><div class="t">${hl(o.name, tokens)}</div><div class="s">${o.phone ? `<span class="mono">${hl(o.phone, tokens)}</span>` : 'بدون هاتف'}${o.notes ? ' · ' + esc(o.notes) : ''}</div>
     <div class="d-flex gap-1 mt-1 flex-wrap">${o.balance > 0 ? `<span class="chip bad">${isC ? 'دين' : 'مستحق'} ${money(o.balance)}</span>` : '<span class="chip ok">مسدّد</span>'}${isC && o.creditLimit > 0 ? `<span class="chip mut">السقف ${money(o.creditLimit)}</span>` : ''}</div></div>
-    <div class="d-flex flex-column gap-1">
+    <div style="display:grid;grid-template-columns:repeat(2,40px);gap:4px;align-content:start">
       ${o.balance > 0 && (isC ? can('pay_customer') : true) ? `<button class="icb" style="background:color-mix(in srgb,var(--ok) 18%,var(--surface));color:var(--ok)" data-act="ent-pay" data-kind="${kind}" data-id="${o.id}" aria-label="تسديد"><i class="bi bi-cash-coin"></i></button>` : ''}
       <button class="icb" data-act="ent-stmt" data-kind="${kind}" data-id="${o.id}" aria-label="كشف حساب"><i class="bi bi-file-text"></i></button>
+      <button class="icb" data-act="ent-moves" data-kind="${kind}" data-id="${o.id}" aria-label="حركات الحساب وإلغاؤها"><i class="bi bi-clock-history"></i></button>
+      ${canEdit ? `<button class="icb" data-act="ent-debt" data-kind="${kind}" data-id="${o.id}" aria-label="إضافة دين"><i class="bi bi-plus-circle"></i></button>` : ''}
       ${isC && o.balance > 0 && o.phone ? `<button class="icb" data-act="ent-wa" data-id="${o.id}" aria-label="تذكير"><i class="bi bi-whatsapp"></i></button>` : ''}
       ${canEdit ? `<button class="icb" data-act="ent-edit" data-kind="${kind}" data-id="${o.id}" aria-label="تعديل"><i class="bi bi-pencil"></i></button>` : ''}
       ${can('delete') ? `<button class="icb danger" data-act="ent-del" data-kind="${kind}" data-id="${o.id}" aria-label="حذف"><i class="bi bi-trash"></i></button>` : ''}</div></div>`;
@@ -2291,7 +2444,7 @@ async function viewCustomers(el) {
   const debt = State.customers.reduce((a, c) => a + Math.max(0, c.balance), 0), n = State.customers.filter(c => c.balance > 0).length;
   el.innerHTML = `<div class="stage"><div class="d-flex gap-2 align-items-center mb-3"><h5 class="m-0 flex-grow-1">الزبائن <span class="chip">${fmtNum(State.customers.length)}</span></h5>
     ${can('customers_edit') ? `<button class="btn btn-accent" data-act="c-add"><i class="bi bi-person-plus"></i> زبون جديد</button>` : ''}</div>
-    <div class="tag g3 mb-3" style="cursor:default"><span class="lbl">إجمالي الديون على الزبائن</span><span class="big num">${money(debt)}</span><span class="sub">${fmtNum(n)} زبون عليهم دين</span></div>
+    <div class="tag g3 mb-3" style="cursor:default"><span class="lbl">إجمالي الديون على الزبائن</span><span class="big num">${money(debt)}</span><span class="sub">${fmtNum(n)} زبون عليهم دين</span><button class="btn btn-sm btn-soft mt-2" data-act="debts-open"><i class="bi bi-cash-stack"></i> الديون والتحصيل</button></div>
     <div class="sbar mb-2"><i class="bi bi-search"></i><input id="c-q" type="search" placeholder="ابحث بالاسم أو الهاتف..." value="${esc(CV.q)}" autocomplete="off"></div>
     <div class="chips"><button class="fchip ${!CV.flt ? 'on' : ''}" data-act="c-flt" data-v="">الكل</button><button class="fchip ${CV.flt === 'debt' ? 'on' : ''}" data-act="c-flt" data-v="debt">عليهم دين</button></div>
     <div class="cardx" id="c-list" style="padding:4px 14px"></div></div>`;
@@ -2461,7 +2614,7 @@ const RP = { p: 'month' };
 async function computeReport(from, to) {
   const [all, rets, exps, pays] = await Promise.all([
     db.sales.where('ts').between(from, to).toArray(), db.returns.where('ts').between(from, to).toArray(),
-    db.expenses.where('ts').between(from, to).toArray(), db.customerPayments.where('ts').between(from, to).toArray()]);
+    db.expenses.where('ts').between(from, to).toArray(), db.customerPayments.where('ts').between(from, to).filter(p => !p.voided).toArray()]);
   const sales = all.filter(s => s.status !== 'void');
   const r = { sales, rets, exps, gross: 0, retT: 0, profit: 0, expT: 0, newDebt: 0, collected: pays.reduce((a, p) => a + p.amount, 0), cat: {}, item: {}, cust: {} };
   for (const s of sales) {
@@ -2513,7 +2666,7 @@ A['rp-xlsx'] = async () => {
 const getOpenShift = () => db.shifts.where('status').equals('open').first();
 async function cashSummary(from, to) {
   const rng = t => t.where('ts').between(from, to);
-  const [sales, cp, rets, exps, sp, purs, prets, voided] = await Promise.all([rng(db.sales).toArray(), rng(db.customerPayments).toArray(), rng(db.returns).toArray(), rng(db.expenses).toArray(), rng(db.supplierPayments).toArray(), rng(db.purchases).toArray(), rng(db.purchaseReturns).toArray(), db.sales.where('status').equals('void').toArray()]);
+  const [sales, cp, rets, exps, sp, purs, prets, voided] = await Promise.all([rng(db.sales).toArray(), rng(db.customerPayments).filter(p => !p.voided).toArray(), rng(db.returns).toArray(), rng(db.expenses).toArray(), rng(db.supplierPayments).filter(p => !p.voided).toArray(), rng(db.purchases).toArray(), rng(db.purchaseReturns).toArray(), db.sales.where('status').equals('void').toArray()]);
   const sum = (arr, f) => round2(arr.reduce((a, x) => a + f(x), 0)), cash = x => x.method === 'cash';
   const o = {
     cashSales: sum(sales.filter(cash), s => s.paid), custPay: sum(cp.filter(cash), p => p.amount), purRetCash: sum(prets.filter(cash), r => r.total),
@@ -2657,7 +2810,7 @@ async function importBackup(file) {
   const names = db.tables.map(t => t.name), found = Object.keys(j.data).filter(k => names.includes(k) && Array.isArray(j.data[k]));
   if (!found.length) throw new Error('الملف لا يحتوي بيانات');
   if (!await confirmBox(`سيتم <b>استبدال كل البيانات الحالية</b> بنسخة بتاريخ ${fmtDT(j.exportedAt || Date.now())} (${found.length} جدول). متابعة؟`, { danger: true, ok: 'استعادة' })) return;
-  await db.transaction('rw', db.tables, async () => { for (const k of found) { await db.table(k).clear(); if (j.data[k].length) await db.table(k).bulkAdd(j.data[k]); } });
+  await db.transaction('rw', db.tables, async () => { for (const k of found) { await db.table(k).clear(); if (j.data[k].length) await db.table(k).bulkAdd(j.data[k]); } if (!found.includes('adjustments')) await db.adjustments.clear(); });
   ss.del('cart'); toast('تمت الاستعادة، جارٍ إعادة التشغيل...', 'success'); setTimeout(() => location.reload(), 900);
 }
 async function resetSystem() {
@@ -2777,20 +2930,20 @@ async function viewAudit(el) {
    التنقل والهيكل العام وبدء التشغيل
    ===================================================================== */
 const VIEWS = {
-  dashboard: { fn: viewDashboard, perm: 'view_dashboard', c: ['#4f46e5', '#7c3aed'], title: 'الرئيسية' },
-  pos: { fn: viewPOS, perm: 'sell', c: ['#4f46e5', '#7c3aed'], title: 'البيع ونقطة البيع' },
-  products: { fn: viewProducts, perm: 'products_view', c: ['#4f46e5', '#7c3aed'], title: 'المنتجات' },
-  purchases: { fn: viewPurchases, perm: 'purchases', c: ['#4f46e5', '#7c3aed'], title: 'المشتريات والموردون' },
-  customers: { fn: viewCustomers, perm: 'customers', c: ['#4f46e5', '#7c3aed'], title: 'الزبائن' },
-  reports: { fn: viewReports, perm: 'reports', c: ['#4f46e5', '#7c3aed'], title: 'التقارير' },
-  more: { fn: viewMore, perm: 'view_dashboard', c: ['#4f46e5', '#7c3aed'], title: 'المزيد' },
-  returns: { fn: viewReturns, perm: 'returns', c: ['#4f46e5', '#7c3aed'], title: 'المرتجعات' },
-  inventory: { fn: viewInventory, perm: 'inventory_view', c: ['#4f46e5', '#7c3aed'], title: 'المخزون' },
-  shift: { fn: viewShift, perm: 'shift', c: ['#4f46e5', '#7c3aed'], title: 'الصندوق' },
-  expenses: { fn: viewExpenses, perm: 'expenses_add', c: ['#4f46e5', '#7c3aed'], title: 'المصاريف' },
-  settings: { fn: viewSettings, perm: 'settings', c: ['#4f46e5', '#7c3aed'], title: 'الإعدادات' },
-  users: { fn: viewUsers, perm: 'users', c: ['#4f46e5', '#7c3aed'], title: 'المستخدمون' },
-  audit: { fn: viewAudit, perm: 'audit', c: ['#4f46e5', '#7c3aed'], title: 'سجل النشاط' }
+  dashboard: { fn: viewDashboard, perm: 'view_dashboard', c: ['#287271', '#4a9a97'], title: 'الرئيسية' },
+  pos: { fn: viewPOS, perm: 'sell', c: ['#287271', '#4a9a97'], title: 'البيع ونقطة البيع' },
+  products: { fn: viewProducts, perm: 'products_view', c: ['#287271', '#4a9a97'], title: 'المنتجات' },
+  purchases: { fn: viewPurchases, perm: 'purchases', c: ['#287271', '#4a9a97'], title: 'المشتريات والموردون' },
+  customers: { fn: viewCustomers, perm: 'customers', c: ['#287271', '#4a9a97'], title: 'الزبائن' },
+  reports: { fn: viewReports, perm: 'reports', c: ['#287271', '#4a9a97'], title: 'التقارير' },
+  more: { fn: viewMore, perm: 'view_dashboard', c: ['#287271', '#4a9a97'], title: 'المزيد' },
+  returns: { fn: viewReturns, perm: 'returns', c: ['#287271', '#4a9a97'], title: 'المرتجعات' },
+  inventory: { fn: viewInventory, perm: 'inventory_view', c: ['#287271', '#4a9a97'], title: 'المخزون' },
+  shift: { fn: viewShift, perm: 'shift', c: ['#287271', '#4a9a97'], title: 'الصندوق' },
+  expenses: { fn: viewExpenses, perm: 'expenses_add', c: ['#287271', '#4a9a97'], title: 'المصاريف' },
+  settings: { fn: viewSettings, perm: 'settings', c: ['#287271', '#4a9a97'], title: 'الإعدادات' },
+  users: { fn: viewUsers, perm: 'users', c: ['#287271', '#4a9a97'], title: 'المستخدمون' },
+  audit: { fn: viewAudit, perm: 'audit', c: ['#287271', '#4a9a97'], title: 'سجل النشاط' }
 };
 const NAV = [
   ['dashboard', 'الرئيسية', 'bi-grid-1x2-fill'], ['pos', 'البيع', 'bi-cart-check-fill'], ['products', 'المنتجات', 'bi-box-seam-fill'], ['purchases', 'المشتريات', 'bi-truck'],
@@ -2840,11 +2993,11 @@ function viewMore(el) {
   const T = (act, to, icon, label, c1, c2, perm) => !perm || can(perm) ? `<button class="mtile" style="--c1:${c1};--c2:${c2}" data-act="${act}" ${to ? `data-to="${to}"` : ''}><i class="bi ${icon}"></i>${label}</button>` : '';
   el.innerHTML = `<div class="stage"><div class="hello mb-3"><i class="bi bi-person-circle ghost"></i><h4>${esc(State.user.name)}</h4><p>${State.user.role === 'admin' ? 'مدير النظام' : 'كاشير'} · ${esc(S.shopName)}</p></div>
     <div class="mgrid">
-      ${T('go', 'returns', 'bi-arrow-return-left', 'المرتجعات', '#c2370f', '#f08a5d', 'returns')}${T('go', 'inventory', 'bi-boxes', 'المخزون', '#0b8a86', '#3cc7c2', 'inventory_view')}
-      ${T('go-count', '', 'bi-clipboard-check', 'الجرد الفعلي', '#0a7ea4', '#3fb6dd', 'adjust_stock')}${T('go', 'shift', 'bi-safe-fill', 'الصندوق والوردية', '#5b4bd6', '#8f84f2', 'shift')}
-      ${T('go', 'expenses', 'bi-wallet2', 'المصاريف', '#b4531f', '#e8925c', 'expenses_add')}${T('go', 'users', 'bi-person-gear', 'المستخدمون', '#2347c5', '#5b7cf0', 'users')}
-      ${T('go', 'audit', 'bi-journal-text', 'سجل النشاط', '#6d3fc9', '#a47cf0', 'audit')}${T('go', 'settings', 'bi-gear-fill', 'الإعدادات', '#3d5a63', '#7f9da6', 'settings')}
-      ${T('backup-now', '', 'bi-cloud-arrow-down-fill', 'نسخة احتياطية', '#0e8f6a', '#35c79a', 'settings')}${T('low-list', '', 'bi-cart-plus', 'قائمة النواقص', '#0b8a86', '#3cc7c2', 'inventory_view')}${T('price-audit', '', 'bi-clipboard-check', 'تدقيق الأسعار', '#c2370f', '#f08a5d', 'products_edit')}${T('sync-open', '', 'bi-cloud-check-fill', 'المزامنة السحابية', '#0a7ea4', '#3fb6dd', 'settings')}${T('lock', '', 'bi-lock-fill', 'قفل التطبيق', '#d6264b', '#f0668f')}</div></div>`;
+      ${T('go', 'returns', 'bi-arrow-return-left', 'المرتجعات', '#a8703f', '#D4A373', 'returns')}${T('go', 'inventory', 'bi-boxes', 'المخزون', '#287271', '#4a9a97', 'inventory_view')}
+      ${T('go-count', '', 'bi-clipboard-check', 'الجرد الفعلي', '#287271', '#4a9a97', 'adjust_stock')}${T('go', 'shift', 'bi-safe-fill', 'الصندوق والوردية', '#287271', '#4a9a97', 'shift')}
+      ${T('go', 'expenses', 'bi-wallet2', 'المصاريف', '#a8703f', '#D4A373', 'expenses_add')}${T('go', 'users', 'bi-person-gear', 'المستخدمون', '#287271', '#4a9a97', 'users')}
+      ${T('go', 'audit', 'bi-journal-text', 'سجل النشاط', '#287271', '#4a9a97', 'audit')}${T('go', 'settings', 'bi-gear-fill', 'الإعدادات', '#287271', '#4a9a97', 'settings')}
+      ${T('backup-now', '', 'bi-cloud-arrow-down-fill', 'نسخة احتياطية', '#287271', '#4a9a97', 'settings')}${T('low-list', '', 'bi-cart-plus', 'قائمة النواقص', '#287271', '#4a9a97', 'inventory_view')}${T('price-audit', '', 'bi-clipboard-check', 'تدقيق الأسعار', '#a8703f', '#D4A373', 'products_edit')}${T('debts-open', '', 'bi-cash-stack', 'الديون والتحصيل', '#a8703f', '#D4A373', 'customers')}${T('sync-open', '', 'bi-cloud-check-fill', 'المزامنة السحابية', '#287271', '#4a9a97', 'settings')}${T('lock', '', 'bi-lock-fill', 'قفل التطبيق', '#a8703f', '#D4A373')}</div></div>`;
 }
 A['go-count'] = () => { IV.tab = 'count'; go('inventory'); };
 A['lock'] = async () => {
@@ -3005,7 +3158,7 @@ async function syPull(id, { full = false } = {}) {
   if (!o || o.app !== 'pos-pwa' || !o.data || !Array.isArray(o.data.products)) throw new Error('النسخة السحابية تالفة');
   const skip = new Set(full ? ['held'] : ['held', 'users', 'settings']);
   SY.applying = true;
-  try { await db.transaction('rw', db.tables, async () => { for (const k of Object.keys(o.data)) { if (skip.has(k) || !db[k] || !Array.isArray(o.data[k])) continue; await db[k].clear(); if (o.data[k].length) await db[k].bulkAdd(o.data[k]); } }); } finally { SY.applying = false; }
+  try { await db.transaction('rw', db.tables, async () => { for (const k of Object.keys(o.data)) { if (skip.has(k) || !db[k] || !Array.isArray(o.data[k])) continue; await db[k].clear(); if (o.data[k].length) await db[k].bulkAdd(o.data[k]); } if (!('adjustments' in o.data)) await db.adjustments.clear(); }); } finally { SY.applying = false; }
   SY.cfg.lastU = m.u; syPersist(); return m;
 }
 async function syHistory() {
